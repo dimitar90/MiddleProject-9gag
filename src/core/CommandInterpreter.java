@@ -26,7 +26,8 @@ public class CommandInterpreter implements IInterpreter {
 
 	private Executable parseCommand(List<String> data) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException, InvalidCommandException {
 		String className = data.get(0);
-		className = PREFFIX + className.substring(0, 1).toUpperCase() + className.substring(1).toLowerCase() + POSTFIX;
+		className = PREFFIX + className + POSTFIX;
+		//className = PREFFIX + className.substring(0, 1).toUpperCase() + className.substring(1).toLowerCase() + POSTFIX;
 		data = data.stream().skip(1).collect(Collectors.toList());
 		
 		Class<?> clazz = null;
@@ -34,7 +35,10 @@ public class CommandInterpreter implements IInterpreter {
 			clazz = Class.forName(className);
 		} catch (Exception e) {
 			throw new InvalidCommandException(INVALID_COMMAND_MESSAGE);
+		} catch (NoClassDefFoundError e) {
+			throw new InvalidCommandException(INVALID_COMMAND_MESSAGE);
 		}
+		
 		Constructor<?> ctor = clazz.getConstructor(List.class);
 		Executable instance = (Executable)ctor.newInstance(data);
 		return instance;

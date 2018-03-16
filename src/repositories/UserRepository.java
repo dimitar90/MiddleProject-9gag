@@ -3,9 +3,8 @@ package repositories;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -75,7 +74,7 @@ public class UserRepository {
 			}
 		}
 		
-		Map<String, User> users = gson.fromJson(sb.toString(), Map.class);
+		Map<String, User> users = gson.fromJson(sb.toString(), HashMap.class);
 		this.users = users;
 	}
 }

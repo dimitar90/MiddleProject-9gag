@@ -2,7 +2,6 @@ package core;
 
 import java.util.Scanner;
 
-import repositories.UserRepository;
 
 public class Engine implements Runnable {
 	
