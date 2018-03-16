@@ -31,14 +31,8 @@ public class LoginCommand extends Command {
 		String username = this.getData().get(0);
 		String password = this.getData().get(1);
 		
-		if (!UserRepository.getInstance().isExistByUsername(username)
-				|| !UserRepository.getInstance().getUserByUsername(username).getPassword().equals(password)) {
-			throw new UserException(INVALID_USER_ARGUMENTS);
-		}
+		User user = UserRepository.getInstance().login(username, password);
 		
-		User user = UserRepository.getInstance().getUserByUsername(username);
-		Session.getInstance().setUser(user);
-		
-		return SUCCES_LOGIN_MESSAGE;
+		return (user != null) ? SUCCES_LOGIN_MESSAGE : INVALID_USER_ARGUMENTS;
 	}
 }
