@@ -1,5 +1,34 @@
 package commands;
 
-public class CreatePostCommand {
+import java.io.IOException;
+import java.util.List;
+
+import exceptions.PostException;
+import models.Post;
+import repositories.PostRepository;
+import utils.Checker;
+
+public class CreatePostCommand extends Command{
+
+	private static final int ARGUMENTS_LENGTHG = 4;
+
+	public CreatePostCommand(List<String> data) {
+		super(data);
+	}
+
+	@Override
+	public String execute() throws IOException, PostException {
+		if (Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTHG)) {
+			throw new PostException(Command.INVALID_DATA);
+		}
+		
+		String postName = this.getData().get(0);
+		String description = this.getData().get(1);
+		String url = this.getData().get(2);
+		String tagName = this.getData().get(3);
+		Post post = PostRepository.getInstance().addPost(postName, description, url,tagName);
+		
+		return Command.SUCCESS_MESSAGE;
+	}
 
 }

@@ -30,7 +30,7 @@ public class RegisterCommand extends Command{
 		String username = this.getData().get(0);
 		String password = this.getData().get(1);
 		String confirmPassword = this.getData().get(2);
-		
+		//“ук не е ли по добре да е void метода ?
 		User user = UserRepository.getInstance().addUser(username, password, confirmPassword);
 		
 		return SUCCESS_MESSAGE;

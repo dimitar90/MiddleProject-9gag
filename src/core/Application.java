@@ -11,6 +11,7 @@ import repositories.UserRepository;
 
 public class Application {
 	public static void main(String[] args) {
+		
 		try {
 			UserRepository.getInstance().deserialize();
 			User.setValueToIdGenerator(UserRepository.getInstance().getLastId());
