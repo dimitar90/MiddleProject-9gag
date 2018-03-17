@@ -6,6 +6,7 @@ import java.util.List;
 import javax.sql.rowset.serial.SerialException;
 
 import exceptions.CommentException;
+import exceptions.PostException;
 import exceptions.UserException;
 
 public abstract class Command implements Executable{
@@ -21,5 +22,5 @@ public abstract class Command implements Executable{
     	return this.data;
     }
    
-    public abstract String execute() throws UserException, IOException, CommentException, SerialException;
+    public abstract String execute() throws UserException, IOException, CommentException, SerialException, PostException;
 }

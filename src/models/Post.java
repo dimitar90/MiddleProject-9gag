@@ -21,15 +21,14 @@ public class Post {
 	static {
 		nextPostId = 0;
 	}
-
 	
-	public Post(String name, String description, String url,String tagName) throws PostException {
+	public Post(String name, String description, String url,Tag tag) throws PostException {
 		this.setDescription(description);
 		this.setName(name);
 		this.id = ++nextPostId;
-		this.tag = TagRepository.gerInstance().getTagByName(tagName); //tuk trqbvashe da e tova ?!
 		this.comments = new HashSet<>();
 		this.imageUrl = url;
+		this.tag = tag;
 	}
 
 	public void addComment(Comment comment) {
@@ -56,7 +55,7 @@ public class Post {
 
 	}
 
-	public void setValueToIdPostGenerator(int lastId) {
+	public static void setValueToIdPostGenerator(int lastId) {
 		nextPostId = lastId;
 	}
 

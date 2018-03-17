@@ -4,21 +4,27 @@ import java.io.IOException;
 import java.util.List;
 
 import exceptions.PostException;
+import exceptions.UserException;
 import models.Post;
 import repositories.PostRepository;
 import utils.Checker;
+import utils.Session;
 
 public class CreatePostCommand extends Command{
-
+	private static final String SUCCESS_MESSAGE = "Create post successfully";
 	private static final int ARGUMENTS_LENGTHG = 4;
-
+	private static final String MEESAGE_NO_USER = "If u want to create a post u have to be logged";
 	public CreatePostCommand(List<String> data) {
 		super(data);
 	}
 
 	@Override
-	public String execute() throws IOException, PostException {
-		if (Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTHG)) {
+	public String execute() throws IOException, PostException, UserException {
+		if (Session.getInstance() == null) {
+			throw new PostException(MEESAGE_NO_USER);
+		}
+		
+		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTHG)) {
 			throw new PostException(Command.INVALID_DATA);
 		}
 		
@@ -28,7 +34,7 @@ public class CreatePostCommand extends Command{
 		String tagName = this.getData().get(3);
 		Post post = PostRepository.getInstance().addPost(postName, description, url,tagName);
 		
-		return Command.SUCCESS_MESSAGE;
+		return SUCCESS_MESSAGE;
 	}
 
 }

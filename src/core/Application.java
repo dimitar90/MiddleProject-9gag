@@ -1,11 +1,14 @@
 package core;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import models.Comment;
+import models.Post;
 import models.Tag;
 import models.User;
 import repositories.CommentRepository;
+import repositories.PostRepository;
 import repositories.TagRepository;
 import repositories.UserRepository;
 
@@ -21,10 +24,14 @@ public class Application {
 			
 			TagRepository.getInstance().deserialize();
 			Tag.setValueToIdGenerator(TagRepository.getInstance().getLastId());
-		} catch (FileNotFoundException e) {
+			
+			PostRepository.getInstance().deserialize();
+			Post.setValueToIdPostGenerator(PostRepository.getInstance().getLastId());
+		} 
+		catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
-			
+		
 		Runnable engine = new Engine();
 		engine.run();
 	}

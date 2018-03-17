@@ -13,13 +13,11 @@ import com.google.gson.reflect.TypeToken;
 
 import exceptions.PostException;
 import models.Post;
+import models.Tag;
 import models.User;
 import utils.Session;
 
 public class PostRepository {
-
-	private static final String MEESAGE_NO_USER = "If u want to create a post u have to be logged";
-
 	private static final String POSTS_PATH = "posts.json";
 
 	public static PostRepository postRepository;
@@ -39,14 +37,16 @@ public class PostRepository {
 	}
 
 	public Post addPost(String postName, String description, String url, String tagName) throws PostException {
-		Post post = new Post(postName, description, url, tagName);
-		if (Session.getInstance() == null) {
-			throw new PostException(MEESAGE_NO_USER);
+		Tag tag = TagRepository.getInstance().getTagByName(tagName);
+		if (tag == null) {
+			tag = TagRepository.getInstance().addTag(tagName);
 		}
 		
-		this.posts.put(post.getId(), post);
+		Post post = new Post(postName, description, url, tag);
 		User user = Session.getInstance().getUser();
-		this.setUser(user);
+		post.setUser(user);
+		this.posts.put(post.getId(), post);
+		
 		return post;
 	}
 
