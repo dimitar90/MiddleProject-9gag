@@ -20,7 +20,7 @@ public class CreatePostCommand extends Command{
 
 	@Override
 	public String execute() throws IOException, PostException, UserException {
-		if (Session.getInstance() == null) {
+		if (Session.getInstance().getUser() == null) {
 			throw new PostException(MEESAGE_NO_USER);
 		}
 		
