@@ -11,7 +11,7 @@ import utils.Session;
 public class LoginCommand extends Command {
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String SUCCES_LOGIN_MESSAGE = "You are logged successfully";
-	private static final String FAILED_LOGIN_MESSAGE = "Logout first!";
+	private static final String FAILED_LOGIN_MESSAGE = "Logout first!";//“ук не тр ли да е login
 	private static final String INVALID_USER_ARGUMENTS = "Invalid username or password!";
 	
 	public LoginCommand(List<String> data) {
