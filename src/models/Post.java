@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import exceptions.PostException;
+import repositories.TagRepository;
 
 public class Post {
 	private static final String MESSAGE_INVALID_DESCRIPTION = "Give a funny, creative and descriptive title to the post would give the post a boost!";
@@ -21,13 +22,12 @@ public class Post {
 		nextPostId = 0;
 	}
 
-	// Taga go pravq da se set-va ne da se syzdava s posta. Gledam taka e w 9gag
-	// suzdava se post s ime i opisanie, url. Ako ne otgowarqt ne se syzdava
-	// konstruiraneto na obekta
-	public Post(String name, String description, String url) throws PostException {
+	
+	public Post(String name, String description, String url,String tagName) throws PostException {
 		this.setDescription(description);
 		this.setName(name);
 		this.id = ++nextPostId;
+		this.tag = TagRepository.gerInstance().getTagByName(tagName); //tuk trqbvashe da e tova ?!
 		this.comments = new HashSet<>();
 		this.imageUrl = url;
 	}
