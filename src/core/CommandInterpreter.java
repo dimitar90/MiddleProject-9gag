@@ -3,10 +3,14 @@ package core;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.rowset.serial.SerialException;
+
 import commands.Executable;
+import exceptions.CommentException;
 import exceptions.InvalidCommandException;
 import exceptions.UserException;
 
@@ -18,11 +22,15 @@ public class CommandInterpreter implements IInterpreter {
 	@Override
 	public String interpretCommand(String input) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
-			ClassNotFoundException, UserException, InvalidCommandException, IOException {
+			ClassNotFoundException, UserException, InvalidCommandException, IOException, CommentException, SerialException {
 		
 		List<String> inputParts = Arrays.asList(input.split("\\|"));
 		List<String> commandParts = Arrays.asList(inputParts.get(0).trim().split(" "));
-		List<String> data = Arrays.asList(inputParts.get(1).trim().split(" "));
+		List<String> data = new ArrayList<String>();
+		if (inputParts.size() > 1) {
+			data = Arrays.asList(inputParts.get(1).trim().split(" "));
+		}
+		
 		Executable command = this.parseCommand(data, commandParts);
 		String result = command.execute();
 		return result;

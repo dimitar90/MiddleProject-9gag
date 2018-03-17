@@ -3,6 +3,9 @@ package commands;
 import java.io.IOException;
 import java.util.List;
 
+import javax.sql.rowset.serial.SerialException;
+
+import exceptions.CommentException;
 import exceptions.UserException;
 
 public abstract class Command implements Executable{
@@ -18,5 +21,5 @@ public abstract class Command implements Executable{
     	return this.data;
     }
    
-    public abstract String execute() throws UserException, IOException;
+    public abstract String execute() throws UserException, IOException, CommentException, SerialException;
 }
