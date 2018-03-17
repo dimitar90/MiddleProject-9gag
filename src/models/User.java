@@ -3,18 +3,12 @@ package models;
 import java.util.HashSet;
 import java.util.Set;
 
-import repositories.UserRepository;
-
 public class User {
-	private static int idGenerator;
+	private static int idGenerator = 0;
 	private int id;
 	private String name;
 	private String password;
 	private Set<Post> posts;
-	
-	static {
-		idGenerator = 0;
-	}
 	
 	public User(String name, String password) {
 		this.id = ++idGenerator;
@@ -41,9 +35,5 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-	
-	public static void setValueToIdGenerator(int lastId) {
-		idGenerator = lastId;
 	}
 }

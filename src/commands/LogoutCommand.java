@@ -9,7 +9,7 @@ import utils.Session;
 public class LogoutCommand extends Command{
 	private static final int ARGUMENTS_LENGTH = 0;
 	private static final String SUCCES_LOGIN_MESSAGE = "You are logout successfully";
-	private static final String FAILED_LOGIN_MESSAGE = "Login first!";//А тук logout ? :)
+	private static final String FAILED_LOGIN_MESSAGE = "Login first!";
 	
 	public LogoutCommand(List<String> data) {
 		super(data);
