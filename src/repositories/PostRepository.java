@@ -88,7 +88,7 @@ public class PostRepository {
 		.sorted((id1,id2) -> Integer.compare(id1, id2))
 		.findFirst()
 		.get()
-		.intValue();
+		.intValue();//vrushta int ,ne Integer 
 	}
 
 }

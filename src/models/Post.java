@@ -21,9 +21,9 @@ public class Post {
 		nextPostId = 0;
 	}
 
-	// Tag-a да се set-va ? Гледам в 9gag не бе задължителен при създаване на Post
-	// създава се post с име и описание и url. Ако не отговарят се прекъсва
-	// конструирането на обекта
+	// Taga go pravq da se set-va ne da se syzdava s posta. Gledam taka e w 9gag
+	// suzdava se post s ime i opisanie, url. Ako ne otgowarqt ne se syzdava
+	// konstruiraneto na obekta
 	public Post(String name, String description, String url) throws PostException {
 		this.setDescription(description);
 		this.setName(name);
