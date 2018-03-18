@@ -10,8 +10,6 @@ import utils.Session;
 
 public class RegisterCommand extends Command{
 	private static final int ARGUMENTS_LENGTH = 3;
-	private static final String ALREADY_EXIST = "Username already exist!";
-	private static final String PASSWORD_MISMATCH = "Password mismatch!";
 	private static final String SUCCESS_MESSAGE = "You are registered successfully";
 	private static final String FAILED_LOGIN_MESSAGE = "Logout first!";
 	
@@ -32,18 +30,8 @@ public class RegisterCommand extends Command{
 		String username = this.getData().get(0);
 		String password = this.getData().get(1);
 		String confirmPassword = this.getData().get(2);
-		
-		if (UserRepository.getInstance().isExistByUsername(username)) {
-			throw new UserException(ALREADY_EXIST);
-		}
-		
-		if (!password.equals(confirmPassword)) {
-			throw new UserException(PASSWORD_MISMATCH);
-		}
-		
-		//create with factory
-		User user = new User(username, password);
-		UserRepository.getInstance().addUser(user);
+		//“ук не е ли по добре да е void метода ?
+		User user = UserRepository.getInstance().addUser(username, password, confirmPassword);
 		
 		return SUCCESS_MESSAGE;
 	}

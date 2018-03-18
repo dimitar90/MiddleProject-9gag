@@ -9,7 +9,6 @@ public class DeletePostCommand extends Command{
 
 	public DeletePostCommand(List<String> data) {
 		super(data);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -17,5 +16,4 @@ public class DeletePostCommand extends Command{
 		String result = "delete post!";
 		return result;
 	}
-
 }
