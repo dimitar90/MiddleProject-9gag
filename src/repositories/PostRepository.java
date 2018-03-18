@@ -2,7 +2,6 @@ package repositories;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -12,9 +11,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import exceptions.PostException;
+import exceptions.SerializeException;
 import models.Post;
 import models.Tag;
 import models.User;
+import utils.JsonSerializer;
 import utils.Session;
 
 public class PostRepository {
@@ -28,8 +29,9 @@ public class PostRepository {
 
 	private Map<Integer, Post> posts;
 	private User user;
-
+	private JsonSerializer serializer;
 	private PostRepository() {
+		this.serializer = new JsonSerializer();
 		this.posts = new HashMap<>();
 	}
 
@@ -71,19 +73,21 @@ public class PostRepository {
 	
 
 
-	public void serialize() throws IOException {
-		File file = new File(POSTS_PATH);
-
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		String jsonPosts = gson.toJson(this.posts);
-
-		try (PrintStream pstream = new PrintStream(file)) {
-			file.createNewFile();
-			pstream.println(jsonPosts);
-		}
+//	public void serialize() throws IOException {
+//		File file = new File(POSTS_PATH);
+//
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//
+//		String jsonPosts = gson.toJson(this.posts);
+//
+//		try (PrintStream pstream = new PrintStream(file)) {
+//			file.createNewFile();
+//			pstream.println(jsonPosts);
+//		}
+//	}
+	public void exportPost() throws SerializeException {
+		this.serializer.serialize(this.posts, POSTS_PATH);
 	}
-
 	public void deserialize() throws IOException {
 		File file = new File(POSTS_PATH);
 

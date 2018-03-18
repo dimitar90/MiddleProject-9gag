@@ -13,9 +13,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import exceptions.CommentException;
+import exceptions.SerializeException;
 import models.Comment;
 import models.Post;
 import models.User;
+import utils.JsonSerializer;
 import utils.Session;
 
 public class CommentRepository {
@@ -25,9 +27,13 @@ public class CommentRepository {
 	
 	private static CommentRepository commentRepository;
 	private Map<Integer, Comment> comments;
+	private JsonSerializer serializer;
+	
 	
 	private CommentRepository() {
+		this.serializer = new JsonSerializer();
 		this.comments = new HashMap<>();
+	
 	}
 	
 	public static CommentRepository getInstance() {
@@ -68,17 +74,19 @@ public class CommentRepository {
 		this.comments.remove(commentId);
 	}
 	
-	public void serialize() throws IOException {
-		File file = new File(COMMENT_PATH);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String jsonComments = gson.toJson(this.comments);
-
-		try (PrintStream ps = new PrintStream(file)) {
-			file.createNewFile();
-			ps.println(jsonComments);
-		}
+//	public void serialize() throws IOException {
+//		File file = new File(COMMENT_PATH);
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//		String jsonComments = gson.toJson(this.comments);
+//
+//		try (PrintStream ps = new PrintStream(file)) {
+//			file.createNewFile();
+//			ps.println(jsonComments);
+//		}
+//	}
+	public void exportComment() throws SerializeException {
+		this.serializer.serialize(this.comments, COMMENT_PATH);
 	}
-
 	public void deserialize() throws FileNotFoundException {
 		File file = new File(COMMENT_PATH);
 		Gson gson = new GsonBuilder().create();

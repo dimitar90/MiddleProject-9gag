@@ -2,8 +2,7 @@ package repositories;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -12,14 +11,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import exceptions.SerializeException;
 import models.Tag;
+import utils.JsonSerializer;
 
 public class TagRepository {
 	private static final String TAG_PATH = "tags.json";
 	private static TagRepository tagRepository;
 	private Map<String, Tag> tags;
-	
+	private JsonSerializer serializer;
 	public TagRepository() {
+		this.serializer = new JsonSerializer();
 		this.tags = new HashMap<>();
 	}
 	
@@ -46,17 +48,19 @@ public class TagRepository {
 		return this.tags.get(name);
 	}
 	
-	public void serialize() throws IOException {
-		File file = new File(TAG_PATH);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String jsonTags = gson.toJson(this.tags);
-
-		try (PrintStream ps = new PrintStream(file)) {
-			file.createNewFile();
-			ps.println(jsonTags);
-		}
+//	public void serialize() throws IOException {
+//		File file = new File(TAG_PATH);
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//		String jsonTags = gson.toJson(this.tags);
+//
+//		try (PrintStream ps = new PrintStream(file)) {
+//			file.createNewFile();
+//			ps.println(jsonTags);
+//		}
+//	}
+	public void exportTag() throws SerializeException {
+		this.serializer.serialize(this.tags, TAG_PATH);
 	}
-
 	public void deserialize() throws FileNotFoundException {
 		File file = new File(TAG_PATH);
 		Gson gson = new GsonBuilder().create();

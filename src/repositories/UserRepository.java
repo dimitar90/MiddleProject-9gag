@@ -2,11 +2,7 @@ package repositories;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -14,8 +10,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import exceptions.SerializeException;
 import exceptions.UserException;
 import models.User;
+import utils.JsonSerializer;
 import utils.Session;
 
 public class UserRepository {
@@ -24,8 +22,10 @@ public class UserRepository {
 	private static final String USER_PATH = "users.json";
 	private static UserRepository userRepository;
 	private Map<String, User> users;
-
+	private JsonSerializer serializer;
+	
 	private UserRepository() {
+		this.serializer = new JsonSerializer();
 		this.users = new HashMap<>();
 	}
 
@@ -79,15 +79,18 @@ public class UserRepository {
 		// return this.users.stream().anyMatch(u -> u.getName().equals(username));
 	}
 
-	public void serialize() throws IOException {
-		File file = new File(USER_PATH);
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String jsonUsers = gson.toJson(this.users);
-
-		try (PrintStream ps = new PrintStream(file)) {
-			file.createNewFile();
-			ps.println(jsonUsers);
-		}
+//	public void serialize() throws IOException {
+//		File file = new File(USER_PATH);
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//		String jsonUsers = gson.toJson(this.users);
+//
+//		try (PrintStream ps = new PrintStream(file)) {
+//			file.createNewFile();
+//			ps.println(jsonUsers);
+//		}
+//	}
+	public void exportUser() throws SerializeException {
+		serializer.serialize(this.users, USER_PATH);
 	}
 
 	public void deserialize() throws FileNotFoundException {
@@ -106,7 +109,11 @@ public class UserRepository {
 		}.getType());
 		this.users = map;
 	}
-
+//	public void importUser() throws DeserializeException {
+//		
+//	}
+	
+	
 	public int getLastId() {
 		if (this.users == null || this.users.size() == 0) {
 			return 0;
