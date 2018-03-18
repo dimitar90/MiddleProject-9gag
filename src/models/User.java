@@ -56,4 +56,8 @@ public class User {
 	public void addComment(int commentId) {
 		this.commentIds.add(commentId);
 	}
+
+	public void deletePostById(int postId) {
+		this.postIds.remove(postId);
+	}
 }
