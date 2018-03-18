@@ -20,6 +20,10 @@ import utils.Session;
 public class PostRepository {
 	private static final String POSTS_PATH = "posts.json";
 
+	private static final String NOT_EXIST_POST_MESSAGE = "THERE IS NO SUCH A POST";
+
+	private static final String NO_AUTHORIZATION = "You don't have permession to delete this post";
+
 	public static PostRepository postRepository;
 
 	private Map<Integer, Post> posts;
@@ -36,6 +40,20 @@ public class PostRepository {
 		return postRepository;
 	}
 
+	public void delete(int postId) throws PostException {
+		if (!this.posts.containsKey(postId)) {
+			throw new PostException(NOT_EXIST_POST_MESSAGE);
+		}
+		
+		if (Session.getInstance().getUser().getId() != this.posts.get(postId).getUser().getId()) {
+			throw new PostException(NO_AUTHORIZATION);
+		}
+		
+		this.posts.get(postId).getUser().deletePostById(postId);
+		
+		this.posts.remove(postId);
+	}
+	
 	public Post addPost(String postName, String description, String url, String tagName) throws PostException {
 		Tag tag = TagRepository.getInstance().getTagByName(tagName);
 		if (tag == null) {
@@ -51,13 +69,7 @@ public class PostRepository {
 		return post;
 	}
 	
-	public Post getPostById(int postId) {
-		if (!this.posts.containsKey(postId)) {
-			return null;
-		}
-		
-		return this.posts.get(postId);
-	}
+
 
 	public void serialize() throws IOException {
 		File file = new File(POSTS_PATH);
@@ -102,7 +114,7 @@ public class PostRepository {
 				.sorted((id1, id2) -> Integer.compare(id1, id2))
 				.findFirst()
 				.get()
-				.intValue();// vrushta int ,ne Integer
+				.intValue();
 	}
 
 	public User getUser() {
@@ -114,5 +126,13 @@ public class PostRepository {
 			this.user = user;	
 		}
 	}
+	public Post getPostById(int postId) {
+		if (!this.posts.containsKey(postId)) {
+			return null;
+		}
+		
+		return this.posts.get(postId);
+	}
+	
 
 }
