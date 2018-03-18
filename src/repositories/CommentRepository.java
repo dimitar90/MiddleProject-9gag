@@ -4,9 +4,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import javax.sql.rowset.serial.SerialException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,32 +30,31 @@ public class CommentRepository {
 	private static final String NOT_EXIST_COMMENT_MESSAGE = "This comment does not exist!";
 	private static final String NOT_HAVE_AUTHORIZATION_MESSAGE = "Not have authorization for delete this comment!";
 	private static final String COMMENT_PATH = "comments.json";
-	
+
 	private static CommentRepository commentRepository;
 	private Map<Integer, Comment> comments;
 	private JsonSerializer serializer;
-	
-	
+
 	private CommentRepository() {
 		this.serializer = new JsonSerializer();
 		this.comments = new HashMap<>();
-	
+
 	}
-	
+
 	public static CommentRepository getInstance() {
 		if (commentRepository == null) {
 			commentRepository = new CommentRepository();
 		}
-		
+
 		return commentRepository;
 	}
-	
+
 	public Comment add(String content, int postId) throws CommentException {
 		Post post = PostRepository.getInstance().getPostById(postId);
 		if (post == null) {
 			throw new CommentException("This post does not exist!");
 		}
-		
+
 		User user = Session.getInstance().getUser();
 		Comment comment = new Comment(content);
 		comment.setPost(post);
@@ -57,7 +62,7 @@ public class CommentRepository {
 		post.addComment(comment.getId());
 		user.addComment(comment.getId());
 		this.comments.put(comment.getId(), comment);
-		
+
 		return comment;
 	}
 
@@ -65,28 +70,30 @@ public class CommentRepository {
 		if (!this.comments.containsKey(commentId)) {
 			throw new CommentException(NOT_EXIST_COMMENT_MESSAGE);
 		}
-		
-		//тука се прави проверка ако логнатия юзер не е автор на коментара да няма право да го изтрие
+
+		// тука се прави проверка ако логнатия юзер не е автор на коментара да няма
+		// право да го изтрие
 		if (Session.getInstance().getUser().getId() != this.comments.get(commentId).getUser().getId()) {
 			throw new CommentException(NOT_HAVE_AUTHORIZATION_MESSAGE);
 		}
-		
+
 		this.comments.remove(commentId);
 	}
-	
-//	public void serialize() throws IOException {
-//		File file = new File(COMMENT_PATH);
-//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//		String jsonComments = gson.toJson(this.comments);
-//
-//		try (PrintStream ps = new PrintStream(file)) {
-//			file.createNewFile();
-//			ps.println(jsonComments);
-//		}
-//	}
-	public void exportComment() throws SerializeException {
+
+	// public void serialize() throws IOException {
+	// File file = new File(COMMENT_PATH);
+	// Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	// String jsonComments = gson.toJson(this.comments);
+	//
+	// try (PrintStream ps = new PrintStream(file)) {
+	// file.createNewFile();
+	// ps.println(jsonComments);
+	// }
+	// }
+	public void exportComment() throws SerializeException, SerialException {
 		this.serializer.serialize(this.comments, COMMENT_PATH);
 	}
+
 	public void deserialize() throws FileNotFoundException {
 		File file = new File(COMMENT_PATH);
 		Gson gson = new GsonBuilder().create();
@@ -101,7 +108,7 @@ public class CommentRepository {
 
 		Map<Integer, Comment> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Comment>>() {
 		}.getType());
-		
+
 		this.comments = map;
 	}
 
@@ -109,13 +116,17 @@ public class CommentRepository {
 		if (this.comments == null || this.comments.size() == 0) {
 			return 0;
 		}
-		
+
+		return this.comments.values().stream().sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).findFirst()
+				.get().getId();
+	}
+
+	public List<Comment> getCommentsByPostId(int postId) {
 		return this.comments
 				.values()
 				.stream()
-				.sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId()))
-				.findFirst()
-				.get()
-				.getId();
+				.filter(c -> c.getPost().getId() == postId)
+				.sorted((c1, c2) -> c1.getDate().compareTo(c2.getDate()))
+				.collect(Collectors.toList());
 	}
 }

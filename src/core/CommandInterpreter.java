@@ -13,6 +13,7 @@ import commands.Executable;
 import exceptions.CommentException;
 import exceptions.InvalidCommandException;
 import exceptions.PostException;
+import exceptions.SerializeException;
 import exceptions.UserException;
 
 public class CommandInterpreter implements IInterpreter {
@@ -23,7 +24,7 @@ public class CommandInterpreter implements IInterpreter {
 	@Override
 	public String interpretCommand(String input) throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
-			ClassNotFoundException, UserException, InvalidCommandException, IOException, CommentException, SerialException, PostException {
+			ClassNotFoundException, UserException, InvalidCommandException, IOException, CommentException, SerialException, PostException, SerializeException {
 		
 		List<String> inputParts = Arrays.asList(input.split("\\|"));
 		List<String> commandParts = Arrays.asList(inputParts.get(0).trim().split(" "));

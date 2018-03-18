@@ -12,7 +12,7 @@ import utils.Session;
 
 public class CreatePostCommand extends Command{
 	private static final String SUCCESS_MESSAGE = "Create post successfully";
-	private static final int ARGUMENTS_LENGTHG = 4;
+	private static final int ARGUMENTS_LENGTH = 4;
 	private static final String MEESAGE_NO_USER = "If u want to create a post u have to be logged";
 	public CreatePostCommand(List<String> data) {
 		super(data);
@@ -24,7 +24,7 @@ public class CreatePostCommand extends Command{
 			throw new PostException(MEESAGE_NO_USER);
 		}
 		
-		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTHG)) {
+		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {
 			throw new PostException(Command.INVALID_DATA);
 		}
 		

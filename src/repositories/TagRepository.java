@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.sql.rowset.serial.SerialException;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -58,7 +60,7 @@ public class TagRepository {
 //			ps.println(jsonTags);
 //		}
 //	}
-	public void exportTag() throws SerializeException {
+	public void exportTag() throws SerializeException, SerialException {
 		this.serializer.serialize(this.tags, TAG_PATH);
 	}
 	public void deserialize() throws FileNotFoundException {

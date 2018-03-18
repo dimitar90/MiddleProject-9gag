@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialException;
 
+import exceptions.SerializeException;
 import exceptions.UserException;
 import repositories.CommentRepository;
 import repositories.PostRepository;
@@ -19,11 +20,11 @@ public class ExitCommand extends Command {
 	}
 
 	@Override
-	public String execute() throws UserException, IOException, SerialException {
-		UserRepository.getInstance().serialize();
-		CommentRepository.getInstance().serialize();
-		TagRepository.getInstance().serialize();
-		PostRepository.getInstance().serialize();
+	public String execute() throws UserException, IOException, SerialException, SerializeException {
+		UserRepository.getInstance().exportUser();
+		CommentRepository.getInstance().exportComment();
+		TagRepository.getInstance().exportTag();
+		PostRepository.getInstance().exportPost();
 		
 		System.exit(0);
 		return "Exit successfully.";

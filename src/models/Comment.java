@@ -63,4 +63,9 @@ public class Comment {
 	public static void setValueToIdGenerator(int lastId) {
 		idGenerator = lastId;
 	}
+
+	@Override
+	public String toString() {
+		return "Comment content: " + this.content + ". Author: " + this.user.getName() + ". Written on: " + this.getDate();
+	}
 }

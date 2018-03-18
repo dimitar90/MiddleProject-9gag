@@ -12,6 +12,7 @@ public class User {
 	private String password;
 	private Set<Integer> postIds;
 	private Set<Integer> commentIds;
+	private Set<Integer> ratedPostIds;
 	
 	static {
 		idGenerator = 0;
@@ -23,6 +24,7 @@ public class User {
 		this.setPassword(password);
 		this.postIds = new HashSet<>();
 		this.commentIds = new HashSet<>();
+		this.ratedPostIds = new HashSet<>();
 	}
 
 	public int getId() {
@@ -59,5 +61,13 @@ public class User {
 
 	public void deletePostById(int postId) {
 		this.postIds.remove(postId);
+	}
+	
+	public void addRatedPostId(int postId) {
+		this.ratedPostIds.add(postId);
+	}
+	
+	public boolean checkForRatedPostById(int postId) {
+		return this.ratedPostIds.contains(postId);
 	}
 }

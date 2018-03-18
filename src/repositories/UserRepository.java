@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
+import javax.sql.rowset.serial.SerialException;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -89,7 +91,7 @@ public class UserRepository {
 //			ps.println(jsonUsers);
 //		}
 //	}
-	public void exportUser() throws SerializeException {
+	public void exportUser() throws SerializeException, SerialException {
 		serializer.serialize(this.users, USER_PATH);
 	}
 

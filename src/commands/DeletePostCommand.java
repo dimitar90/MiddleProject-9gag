@@ -31,6 +31,7 @@ public class DeletePostCommand extends Command{
 		
 		int postId = Integer.parseInt(this.getData().get(0));
 		PostRepository.getInstance().delete(postId);
+		
 		return SUCCESSFULLY_MESSAGE;
 	}
 }
