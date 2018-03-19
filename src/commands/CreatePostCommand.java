@@ -14,6 +14,7 @@ public class CreatePostCommand extends Command{
 	private static final String SUCCESS_MESSAGE = "Create post successfully";
 	private static final int ARGUMENTS_LENGTH = 4;
 	private static final String MEESAGE_NO_USER = "If u want to create a post u have to be logged";
+	private static final String MSG_TO_FOR_FIRST_COMMENT = "Be the first to comment!";
 	public CreatePostCommand(List<String> data) {
 		super(data);
 	}
@@ -34,6 +35,9 @@ public class CreatePostCommand extends Command{
 		String tagName = this.getData().get(3);
 		Post post = PostRepository.getInstance().addPost(postName, description, url,tagName);
 		
+		if (!post.anyComments()) {
+			System.out.println(MSG_TO_FOR_FIRST_COMMENT);
+		}
 		return SUCCESS_MESSAGE;
 	}
 

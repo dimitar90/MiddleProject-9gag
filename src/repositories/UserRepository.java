@@ -12,9 +12,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import exceptions.DeserializeException;
 import exceptions.SerializeException;
 import exceptions.UserException;
 import models.User;
+import utils.IDeserialize;
 import utils.JsonSerializer;
 import utils.Session;
 
@@ -95,25 +97,26 @@ public class UserRepository {
 		serializer.serialize(this.users, USER_PATH);
 	}
 
-	public void deserialize() throws FileNotFoundException {
-		File file = new File(USER_PATH);
-		Gson gson = new GsonBuilder().create();
-		StringBuilder sb = new StringBuilder();
-
-		try (Scanner sc = new Scanner(file)) {
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				sb.append(line);
-			}
-		}
-
-		Map<String, User> map = gson.fromJson(sb.toString(), new TypeToken<Map<String, User>>() {
-		}.getType());
-		this.users = map;
-	}
-//	public void importUser() throws DeserializeException {
+//	public void deserialize() throws FileNotFoundException {
+//		File file = new File(USER_PATH);
+//		Gson gson = new GsonBuilder().create();
+//		StringBuilder sb = new StringBuilder();
+//
+//		try (Scanner sc = new Scanner(file)) {
+//			while (sc.hasNextLine()) {
+//				String line = sc.nextLine();
+//				sb.append(line);
+//			}
+//		}
+//
+//		Map<String, User> map = gson.fromJson(sb.toString(), new TypeToken<Map<String, User>>() {
+//		}.getType());
 //		
+//		this.users = map;
 //	}
+	public void importUser() throws DeserializeException {
+		this.users = serializer.deserialize(USER_PATH);
+	}
 	
 	
 	public int getLastId() {

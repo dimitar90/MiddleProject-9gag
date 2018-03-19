@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import javax.sql.rowset.serial.SerialException;
 import org.omg.Messaging.SyncScopeHelper;
@@ -13,6 +15,7 @@ import org.omg.Messaging.SyncScopeHelper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 import exceptions.PostException;
 import exceptions.SerializeException;
@@ -29,8 +32,6 @@ public class PostRepository {
 	private static final int MAX_GRADE = 10;
 
 	private static final String POSTS_PATH = "posts.json";
-
-	private static final String NOT_EXIST_POST_MESSAGE = "THERE IS NO SUCH A POST";
 
 	private static final String NO_AUTHORIZATION = "You don't have permession to delete this post";
 
@@ -59,9 +60,22 @@ public class PostRepository {
 		return postRepository;
 	}
 
+	
+//	public void editCommentOfCurrentPost(int postId, int commentId,String content) throws PostException {
+//		if (!this.posts.containsKey(postId)) {
+//			throw new PostException(NOT_EXIST_POST_MEESAGE);
+//		}
+//		
+//		if (Session.getInstance().getUser().getId() != this.posts.get(postId).getUser().getId()) {
+//			throw new PostException(NO_AUTHORIZATION);
+//		}
+//		
+//		this.posts.get(postId).editComment(commentId);
+//	}
+	
 	public void delete(int postId) throws PostException {
 		if (!this.posts.containsKey(postId)) {
-			throw new PostException(NOT_EXIST_POST_MESSAGE);
+			throw new PostException(NOT_EXIST_POST_MEESAGE);
 		}
 
 		if (Session.getInstance().getUser().getId() != this.posts.get(postId).getUser().getId()) {
@@ -88,18 +102,18 @@ public class PostRepository {
 		return post;
 	}
 
-	// public void serialize() throws IOException {
-	// File file = new File(POSTS_PATH);
-	//
-	// Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	//
-	// String jsonPosts = gson.toJson(this.posts);
-	//
-	// try (PrintStream pstream = new PrintStream(file)) {
-	// file.createNewFile();
-	// pstream.println(jsonPosts);
-	// }
-	// }
+//	public void serialize() throws IOException {
+//		File file = new File(POSTS_PATH);
+//
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//
+//		String jsonPosts = gson.toJson(this.posts);
+//
+//		try (PrintStream pstream = new PrintStream(file)) {
+//			file.createNewFile();
+//			pstream.println(jsonPosts);
+//		}
+//	}
 	public void exportPost() throws SerializeException, SerialException {
 		this.serializer.serialize(this.posts, POSTS_PATH);
 	}
@@ -209,4 +223,7 @@ public class PostRepository {
 
 		return sb.toString();
 	}
+
+
+	
 }

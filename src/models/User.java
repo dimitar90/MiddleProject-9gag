@@ -3,9 +3,9 @@ package models;
 import java.util.HashSet;
 import java.util.Set;
 
-import repositories.UserRepository;
+import utils.IDeserialize;
 
-public class User {
+public class User implements IDeserialize{
 	private static int idGenerator;
 	private int id;
 	private String name;

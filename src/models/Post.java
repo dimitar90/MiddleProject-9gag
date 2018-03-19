@@ -8,8 +8,9 @@ import java.util.Set;
 
 import exceptions.PostException;
 import repositories.TagRepository;
+import utils.IDeserialize;
 
-public class Post {
+public class Post implements IDeserialize{
 	private static final String MESSAGE_INVALID_DESCRIPTION = "Give a funny, creative and descriptive title to the post would give the post a boost!";
 	private static final String MESSAGE_INVALID_NAME = "Invalid parameters for name";
 	private static int nextPostId;
@@ -115,6 +116,10 @@ public class Post {
 		return "Post: " + this.name + ". Description: " + this.description + ". Author: " + user.getName() + " Content(Url): " + this.imageUrl 
 				+ System.lineSeparator() + "Post rating: " + rating  + " Written on: " + this.date
 				 + " Tag: " + this.tag.getName();
+	}
+
+	public boolean anyComments() {
+		return this.commentIds.size() > 0;
 	}
 
 }

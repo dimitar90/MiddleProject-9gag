@@ -2,6 +2,7 @@ package utils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.sql.rowset.serial.SerialException;
 
@@ -9,9 +10,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import commands.Command;
 import exceptions.DeserializeException;
+import models.Comment;
+import models.User;
 
-public class JsonSerializer {
+public class JsonSerializer implements Serializer{
 	private static final String SERIALIZE_FAILED_MESSAGE = "Serializing a %d file failed!";
 	private static final String DESERIALIZE_FAILED_MESSAGE = "Deserializing a %d file failed!!";
 
@@ -33,10 +37,10 @@ public class JsonSerializer {
 		}
 	}
 
-	public <T> T deserialize(Class<T> clazz, String fileName) throws DeserializeException {
+	public <T> T deserialize(final String fileName) throws DeserializeException {
 		try {
 			String json = fileIO.read(fileName);
-			T map = gson.fromJson(json, new TypeToken<T>() {}.getType());
+			T map = gson.fromJson(json, new TypeToken<Map<String, User>>() {}.getType());
 			
 			return map;
 		} catch (FileNotFoundException e) {

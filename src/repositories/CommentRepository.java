@@ -131,13 +131,15 @@ public class CommentRepository {
 				sb.append(line);
 			}
 		}
-
 		Map<Integer, Comment> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Comment>>() {
 		}.getType());
 
 		this.comments = map;
 	}
 
+//	public void importComment() {
+//		this.serializer.deserialize(this.comments, COMMENT_PATH);
+//	}
 	private void isValidComment(int arg) throws CommentException {
 		if (!this.comments.containsKey(arg)) {
 			throw new CommentException(NOT_EXIST_COMMENT_MESSAGE);

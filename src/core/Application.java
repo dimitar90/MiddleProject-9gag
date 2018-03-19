@@ -2,6 +2,7 @@ package core;
 
 import java.io.IOException;
 
+import exceptions.DeserializeException;
 import models.Comment;
 import models.Post;
 import models.Tag;
@@ -15,10 +16,12 @@ public class Application {
 	public static void main(String[] args) {
 		
 		try {
-			UserRepository.getInstance().deserialize();
+//			UserRepository.getInstance().deserialize();
+			UserRepository.getInstance().importUser();
 			User.setValueToIdGenerator(UserRepository.getInstance().getLastId());
 			
 			CommentRepository.getInstance().deserialize();
+//			CommentRepository.getInstance().importComment();
 			Comment.setValueToIdGenerator(CommentRepository.getInstance().getLastId());
 			
 			TagRepository.getInstance().deserialize();
@@ -27,7 +30,7 @@ public class Application {
 			PostRepository.getInstance().deserialize();
 			Post.setValueToIdPostGenerator(PostRepository.getInstance().getLastId());
 		} 
-		catch (IOException e) {
+		catch (IOException | DeserializeException e) {
 			System.out.println(e.getMessage());
 		}
 		
