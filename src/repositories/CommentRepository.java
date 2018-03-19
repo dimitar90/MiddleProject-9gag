@@ -129,4 +129,8 @@ public class CommentRepository {
 				.sorted((c1, c2) -> c1.getDate().compareTo(c2.getDate()))
 				.collect(Collectors.toList());
 	}
+
+	public void deleteAllCommentsCurrentPostById(int postId) {
+		this.comments.values().removeIf(v -> v.getPostId() == postId);
+	}
 }
