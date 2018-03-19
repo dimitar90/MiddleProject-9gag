@@ -116,4 +116,5 @@ public class Post {
 				+ System.lineSeparator() + "Post rating: " + rating  + " Written on: " + this.date
 				 + " Tag: " + this.tag.getName();
 	}
+
 }
