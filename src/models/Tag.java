@@ -1,6 +1,8 @@
 package models;
 
-public class Tag {
+import utils.IDeserialize;
+
+public class Tag implements IDeserialize{
 	private static int idGenerator = 0;
 	private int id;
 	private String name;

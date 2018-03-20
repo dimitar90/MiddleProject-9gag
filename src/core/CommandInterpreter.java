@@ -22,9 +22,7 @@ public class CommandInterpreter implements IInterpreter {
 	private static final String INVALID_COMMAND_MESSAGE = "Invalid command name!";
 
 	@Override
-	public String interpretCommand(String input) throws InstantiationException, IllegalAccessException,
-			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException,
-			ClassNotFoundException, UserException, InvalidCommandException, IOException, CommentException, SerialException, PostException, SerializeException {
+	public String interpretCommand(String input) throws Exception {
 		
 		List<String> inputParts = Arrays.asList(input.split("\\|"));
 		List<String> commandParts = Arrays.asList(inputParts.get(0).trim().split(" "));

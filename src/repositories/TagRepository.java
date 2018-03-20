@@ -20,7 +20,7 @@ import utils.JsonSerializer;
 public class TagRepository {
 	private static final String TAG_PATH = "tags.json";
 	private static TagRepository tagRepository;
-	private Map<String, Tag> tags;
+	private Map<Integer, Tag> tags;
 	private JsonSerializer serializer;
 	public TagRepository() {
 		this.serializer = new JsonSerializer();
@@ -37,17 +37,25 @@ public class TagRepository {
 	
 	public Tag addTag(String name) {
 		Tag tag = new Tag(name);
-		this.tags.put(tag.getName(), tag);
+		this.tags.put(tag.getId(), tag);
 		
 		return tag;
 	}
 	
 	public Tag getTagByName(String name) {
-		if (!this.tags.containsKey(name)) {
+		if (!this.tags.values().stream().anyMatch(t -> t.getName().equals(name))) {
 			return null;
 		}
 		
-		return this.tags.get(name);
+		return this.tags.values().stream().filter(t -> t.getName().equals(name)).findFirst().get();
+	}
+	
+	public Tag getTagById(int id) {
+		if (!this.tags.containsKey(id)) {
+			return null;
+		}
+		
+		return this.tags.get(id);
 	}
 	
 //	public void serialize() throws IOException {
@@ -63,7 +71,7 @@ public class TagRepository {
 	public void exportTag() throws SerializeException, SerialException {
 		this.serializer.serialize(this.tags, TAG_PATH);
 	}
-	public void deserialize() throws FileNotFoundException {
+	public <U> void deserialize() throws FileNotFoundException {
 		File file = new File(TAG_PATH);
 		Gson gson = new GsonBuilder().create();
 		StringBuilder sb = new StringBuilder();
@@ -75,7 +83,7 @@ public class TagRepository {
 			}
 		}
 
-		Map<String, Tag> map = gson.fromJson(sb.toString(), new TypeToken<Map<String, Tag>>() {
+		Map<Integer, Tag> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Tag>>() {
 		}.getType());
 		
 		this.tags = map;

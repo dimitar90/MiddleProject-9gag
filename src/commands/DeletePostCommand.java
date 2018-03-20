@@ -5,6 +5,8 @@ import java.util.List;
 
 import exceptions.PostException;
 import exceptions.UserException;
+import models.Comment;
+import repositories.CommentRepository;
 import repositories.PostRepository;
 import utils.Checker;
 import utils.Session;
@@ -28,8 +30,12 @@ public class DeletePostCommand extends Command{
 		if (Session.getInstance().getUser() == null) {
 			throw new UserException(FAILED_LOGIN_MESSAGE);
 		}
-		
+				
+		// извличаме ID-то на текущият пост
 		int postId = Integer.parseInt(this.getData().get(0));
+		//трием всички коментари в този пост 
+		
+		//трием поста
 		PostRepository.getInstance().delete(postId);
 		
 		return SUCCESSFULLY_MESSAGE;

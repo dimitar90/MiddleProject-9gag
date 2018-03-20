@@ -7,8 +7,10 @@ import javax.sql.rowset.serial.SerialException;
 
 import exceptions.SerializeException;
 import exceptions.UserException;
+import models.Section;
 import repositories.CommentRepository;
 import repositories.PostRepository;
+import repositories.SectionRepository;
 import repositories.TagRepository;
 import repositories.UserRepository;
 
@@ -25,6 +27,7 @@ public class ExitCommand extends Command {
 		CommentRepository.getInstance().exportComment();
 		TagRepository.getInstance().exportTag();
 		PostRepository.getInstance().exportPost();
+		SectionRepository.getInstance().exportSections();
 		
 		System.exit(0);
 		return "Exit successfully.";

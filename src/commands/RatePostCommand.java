@@ -18,7 +18,7 @@ public class RatePostCommand extends Command {
 	private static final String MEESAGE_NO_USER = "If u want to rated a post u have to be logged";
 	private static final String SUCCESSFULLY_MESSAGE = "You have rated the post successfully.";
 	
-	// rate post | postId postGrade(between 1 and 10)
+	// rate post | postId postGrade(rate must be -1 or 1)
 	public RatePostCommand(List<String> data) {
 		super(data);
 	}

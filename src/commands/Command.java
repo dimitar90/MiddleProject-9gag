@@ -23,5 +23,5 @@ public abstract class Command implements Executable{
     	return this.data;
     }
    
-    public abstract String execute() throws UserException, IOException, CommentException, SerialException, PostException, SerializeException;
+    public abstract String execute() throws Exception;
 }
