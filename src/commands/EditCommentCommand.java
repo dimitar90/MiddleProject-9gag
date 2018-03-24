@@ -19,7 +19,8 @@ public class EditCommentCommand extends Command{
 	private static final int ARGUMENTS_LENGTH = 3;
 	private static final String FAILED_POST_MESSAGE = "If you want to edit the post, please login first";
 	private static final String SUCCESSFULLY_CREATE_COMMENT_MESSAGE = "Successfully edited post";
-//edit comment post | нов текст;id на поста;id на коментара
+	
+	//edit comment post | нов текст;id на поста;id на коментара
 	public EditCommentCommand(List<String> data) {
 		super(data);
 	}

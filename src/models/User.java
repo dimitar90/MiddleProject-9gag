@@ -3,40 +3,60 @@ package models;
 import java.util.HashSet;
 import java.util.Set;
 
+import annotations.Column;
 import utils.IDeserialize;
 
 public class User implements IDeserialize{
-	private static int idGenerator;
 	private int id;
-	private String name;
+	
+	@Column(name = "username")
+	private String username;
+	
+	@Column(name = "password")
 	private String password;
+	
+	@Column(name = "email")
+	private String email;
+	
 	private Set<Integer> postIds;
 	private Set<Integer> commentIds;
 	private Set<Integer> ratedPostIds;
 	
-	static {
-		idGenerator = 0;
-	}
-
-	public User(String name, String password) {
-		this.id = ++idGenerator;
-		this.setName(name);
-		this.setPassword(password);
+	public User() {
 		this.postIds = new HashSet<>();
 		this.commentIds = new HashSet<>();
 		this.ratedPostIds = new HashSet<>();
+	}
+
+	public User(String username, String password, String email) {
+		this();
+		this.setUsername(username);
+		this.setPassword(password);
+		this.setEmail(email);
+	}
+	
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public int getId() {
 		return this.id;
 	}
 
-	public String getName() {
-		return name;
+	public String getEmail() {
+		return email;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 	public String getPassword() {
@@ -51,9 +71,6 @@ public class User implements IDeserialize{
 		this.postIds.add(postId);
 	}
 
-	public static void setValueToIdGenerator(int lastId) {
-		idGenerator = lastId;
-	}
 
 	public void addComment(int commentId) {
 		this.commentIds.add(commentId);

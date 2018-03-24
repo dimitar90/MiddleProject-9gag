@@ -35,7 +35,7 @@ public class RatePostCommand extends Command {
 		}
 		
 		int postId = Integer.parseInt(this.getData().get(0));
-		int grade = Integer.parseInt(this.getData().get(1));
+		byte grade = Byte.parseByte(this.getData().get(1));
 		
 		PostRepository.getInstance().addGradeToPost(postId, grade);
 		

@@ -77,7 +77,7 @@ public class Comment implements IDeserialize{
 
 	@Override
 	public String toString() {
-		return "Comment content: " + this.content + ". Author: " + this.user.getName() + ". Written on: "
+		return "Comment content: " + this.content + ". Author: " + this.user.getUsername() + ". Written on: "
 				+ this.getDate();
 	}
 

@@ -19,7 +19,6 @@ import com.google.gson.reflect.TypeToken;
 import exceptions.PostException;
 import exceptions.SectionException;
 import exceptions.SerializeException;
-import exceptions.UrlException;
 import models.Comment;
 import models.Post;
 import models.Section;
@@ -171,7 +170,7 @@ public class PostRepository {
 		return this.posts.get(postId);
 	}
 
-	public void addGradeToPost(int postId, int grade) throws PostException {
+	public void addGradeToPost(int postId, byte grade) throws PostException {
 		if (grade != DOWN_GRADE && grade != UP_GRADE) {
 			throw new PostException(INVALID_GRADE);
 		}

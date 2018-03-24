@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -25,17 +26,18 @@ public class Post implements IDeserialize {
 	private static final int KB = 1024;
 	private static final String MESSAGE_INVALID_DESCRIPTION = "Give a funny, creative and descriptive title to the post would give the post a boost!";
 	private static final String MESSAGE_INVALID_NAME = "Invalid parameters for name";
-	private static final String PATH_RES = "C:\\Users\\Dimitar\\middleProject-9gag\\MiddleProject-9gag\\resources\\";
+	private static final String PATH_RES = "resources" + File.separator;
 
 	private static int nextPostId;
 	private int id;
-	private String imageUrl;
+	private String internetUrl;
+	private String localUrl;
 	private Date date;
 	private User user;
 	private String description;
 	private Set<Integer> commentIds;
 	private Set<Integer> tagIds;
-	private List<Integer> ratings;
+	private List<Byte> ratings;
 	private Section section;
 	private volatile boolean hasDownload;
 
@@ -47,7 +49,7 @@ public class Post implements IDeserialize {
 		this.setDescription(description);
 		this.id = ++nextPostId;
 		this.commentIds = new HashSet<>();
-		this.imageUrl = url;
+		this.internetUrl = url;
 		this.tagIds = new HashSet<>();
 		this.date = new Date();
 		this.ratings = new ArrayList<>();
@@ -97,11 +99,19 @@ public class Post implements IDeserialize {
 		return date;
 	}
 
+	public String getLocalUrl() {
+		return localUrl;
+	}
+
+	public void setLocalUrl(String localUrl) {
+		this.localUrl = localUrl;
+	}
+
 	public void setDate(Date date) {
 		this.date = date;
 	}
 
-	public void addRating(int rating) {
+	public void addRating(byte rating) {
 		this.ratings.add(rating);
 	}
 
@@ -134,15 +144,14 @@ public class Post implements IDeserialize {
 			}
 		}
 
-		return "Post description: " + this.description + ". Author: " + user.getName() + " Content(Url): "
-				+ this.imageUrl + System.lineSeparator() + "Post rating: " + rating + " Written on: " + this.date
+		return "Post description: " + this.description + ". Author: " + user.getUsername() + " Content(Url): "
+				+ this.internetUrl + System.lineSeparator() + "Post rating: " + rating + " Written on: " + this.date
 				+ " Section: " + this.section.getName() + " Tags: " + String.join(", ", tagNames);
 	}
 
 	public void downloadImage() {
 
-		String dirName = this.user.getName();
-		dirName += this.user.getId();
+		String dirName = this.user.getUsername();
 		File file = new File(PATH_RES + dirName);
 
 		try {
@@ -150,11 +159,14 @@ public class Post implements IDeserialize {
 				file.mkdirs();
 			}
 
-			URL url = new URL(this.imageUrl);
-			HttpURLConnection http = (HttpURLConnection) url.openConnection();
-			double fileSize = (double) http.getContentLengthLong();
-			BufferedInputStream in = new BufferedInputStream(http.getInputStream());
-			FileOutputStream fos = new FileOutputStream(file + "\\Image" + (this.tagIds) + ".jpg");
+			URLConnection url = new URL(this.internetUrl).openConnection();
+			url.addRequestProperty("User-Agent", 
+					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)");
+			
+			double fileSize = (double) url.getContentLengthLong();
+			BufferedInputStream in = new BufferedInputStream(url.getInputStream());
+			String localPath = file + File.separator + "image" + this.id + ".jpg";
+			FileOutputStream fos = new FileOutputStream(localPath);
 
 			BufferedOutputStream bout = new BufferedOutputStream(fos, KB);
 			byte[] buffer = new byte[KB];
@@ -173,6 +185,7 @@ public class Post implements IDeserialize {
 			bout.close();
 			in.close();
 			this.setFlag(true);
+			this.localUrl = localPath;
 			System.out.println(FINAL_MESSAGE);
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -5,14 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Section {
-	private static int idGenerator;
 	private int id;
 	private String name;
 	private Set<Integer> postIds;
 	
-	public Section(String name) {
-		this.id = ++idGenerator;
-		this.setName(name);
+	public Section() {
 		this.postIds = new HashSet<>();
 	}
 	
@@ -27,17 +24,9 @@ public class Section {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	static {
-		idGenerator = 0;
-	}
 	
-	public Section() {
-		this.id = ++idGenerator;
-	}
-	
-	public static void setValueToIdGenerator(int lastId) {
-		idGenerator = lastId;
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	public int getId() {

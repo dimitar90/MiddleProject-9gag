@@ -18,16 +18,13 @@ public class ExitCommand extends Command {
 
 	public ExitCommand(List<String> data) {
 		super(data);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public String execute() throws UserException, IOException, SerialException, SerializeException {
-		UserRepository.getInstance().exportUser();
 		CommentRepository.getInstance().exportComment();
 		TagRepository.getInstance().exportTag();
 		PostRepository.getInstance().exportPost();
-		SectionRepository.getInstance().exportSections();
 		
 		System.exit(0);
 		return "Exit successfully.";
