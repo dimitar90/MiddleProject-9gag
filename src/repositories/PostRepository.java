@@ -19,11 +19,13 @@ import com.google.gson.reflect.TypeToken;
 import exceptions.PostException;
 import exceptions.SectionException;
 import exceptions.SerializeException;
+import exceptions.UrlException;
 import models.Comment;
 import models.Post;
 import models.Section;
 import models.Tag;
 import models.User;
+import utils.Downloader;
 import utils.JsonSerializer;
 import utils.Session;
 
@@ -47,9 +49,9 @@ public class PostRepository {
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
 
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
-
+	
 	public static PostRepository postRepository;
-
+	
 	private Map<Integer, Post> posts;
 	private JsonSerializer serializer;
 
@@ -65,19 +67,20 @@ public class PostRepository {
 		return postRepository;
 	}
 
-	
-//	public void editCommentOfCurrentPost(int postId, int commentId,String content) throws PostException {
-//		if (!this.posts.containsKey(postId)) {
-//			throw new PostException(NOT_EXIST_POST_MEESAGE);
-//		}
-//		
-//		if (Session.getInstance().getUser().getId() != this.posts.get(postId).getUser().getId()) {
-//			throw new PostException(NO_AUTHORIZATION);
-//		}
-//		
-//		this.posts.get(postId).editComment(commentId);
-//	}
-	
+	// public void editCommentOfCurrentPost(int postId, int commentId,String
+	// content) throws PostException {
+	// if (!this.posts.containsKey(postId)) {
+	// throw new PostException(NOT_EXIST_POST_MEESAGE);
+	// }
+	//
+	// if (Session.getInstance().getUser().getId() !=
+	// this.posts.get(postId).getUser().getId()) {
+	// throw new PostException(NO_AUTHORIZATION);
+	// }
+	//
+	// this.posts.get(postId).editComment(commentId);
+	// }
+
 	public void delete(int postId) throws PostException {
 		if (!this.posts.containsKey(postId)) {
 			throw new PostException(NOT_EXIST_POST_MEESAGE);
@@ -88,32 +91,34 @@ public class PostRepository {
 		}
 
 		CommentRepository.getInstance().deleteAllCommentsCurrentPostById(postId);
-		
+
 		this.posts.get(postId).getUser().deletePostById(postId);
 
 		this.posts.remove(postId);
 	}
 
-	public Post addPost(String description, String url, String sectionName, List<String> tags) throws PostException, SectionException {
+	public Post addPost(String description, String url, String sectionName, List<String> tags)
+			throws PostException, SectionException {
 		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
 		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
-		
+
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}
-//		if (section == null) {
-//			section = SectionRepository.getInstance().addSection(sectionName);
-//		}
-		
+		// if (section == null) {
+		// section = SectionRepository.getInstance().addSection(sectionName);
+		// }
+
 		Post post = new Post(description, url, section);
 
-		//и тука се променя логиката вече не проверяваме само за 1 таг, а за всички подадени и ги сетваме на поста
+		// и тука се променя логиката вече не проверяваме само за 1 таг, а за всички
+		// подадени и ги сетваме на поста
 		for (String tagName : tags) {
 			Tag tag = TagRepository.getInstance().getTagByName(tagName);
 			if (tag == null) {
 				tag = TagRepository.getInstance().addTag(tagName);
 			}
-			
+
 			post.addTagId(tag.getId());
 		}
 
@@ -126,19 +131,6 @@ public class PostRepository {
 		return post;
 	}
 
-//	public void serialize() throws IOException {
-//		File file = new File(POSTS_PATH);
-//
-//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//
-//		String jsonPosts = gson.toJson(this.posts);
-//
-//		try (PrintStream pstream = new PrintStream(file)) {
-//			file.createNewFile();
-//			pstream.println(jsonPosts);
-//		}
-//	}
-	
 	public void exportPost() throws SerializeException, SerialException {
 		this.serializer.serialize(this.posts, POSTS_PATH);
 	}
@@ -196,95 +188,91 @@ public class PostRepository {
 		this.posts.get(postId).addRating(grade);
 		user.addRatedPostId(postId);
 	}
-	
+
 	public void listPostsByTagName(String tagName) {
 		CommentRepository commentsRepository = CommentRepository.getInstance();
-		
-		//тука има малка промяна понеже вече постовете имат колекция от тагове(а самите постове си пазят само ид-то на таговете
-		//заради цикличния проблем при сериализация ако пазят само обекти).
-		//Та за да пресея всички постове, които съдържат подадения таг съм направил тоя помощен метод
-		//при филтрацията, който по всичките ид-та на тагове в поста бърка в таг репоситорито и връща имената
-		//на тези тагове и филтрирам само тези постове, които съдържат този таг
-		this.posts
-			.values()
-			.stream()
-			.filter(p -> getTagNamesByTagIds(p.getTagIds()).contains(tagName))
-			.sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
-			.forEach(p -> System.out.println(p + System.lineSeparator()
-				+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
-				+ System.lineSeparator()));
+
+		// тука има малка промяна понеже вече постовете имат колекция от тагове(а самите
+		// постове си пазят само ид-то на таговете
+		// заради цикличния проблем при сериализация ако пазят само обекти).
+		// Та за да пресея всички постове, които съдържат подадения таг съм направил тоя
+		// помощен метод
+		// при филтрацията, който по всичките ид-та на тагове в поста бърка в таг
+		// репоситорито и връща имената
+		// на тези тагове и филтрирам само тези постове, които съдържат този таг
+		this.posts.values().stream().filter(p -> getTagNamesByTagIds(p.getTagIds()).contains(tagName))
+				.sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
+				.forEach(p -> System.out.println(p + System.lineSeparator()
+						+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
+						+ System.lineSeparator()));
 	}
 
 	public void listAllPostsSortedByLatest() {
 		CommentRepository commentsRepository = CommentRepository.getInstance();
 
-		this.posts
-				.values()
-				.stream()
-				.sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
+		this.posts.values().stream().sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
 				.forEach(p -> System.out.println(p + System.lineSeparator()
 						+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
 						+ System.lineSeparator()));
 	}
-	
+
 	public void listAllPostsSortedByRating() {
 		CommentRepository commentsRepository = CommentRepository.getInstance();
 
-		this.posts
-				.values()
-				.stream()
-				.sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
+		this.posts.values().stream().sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
 				.forEach(p -> System.out.println(p + System.lineSeparator()
 						+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
 						+ System.lineSeparator()));
 	}
-	
+
 	public void listAllPostsBySectionName(String sectionName) throws PostException {
 		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
-		
-		//тука правя проверка ако секцията не съществува хвърлям ексепшън и показвам като съобщение
-		//всичките налични секции от които може да се избере
+
+		// тука правя проверка ако секцията не съществува хвърлям ексепшън и показвам
+		// като съобщение
+		// всичките налични секции от които може да се избере
 		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}
-		
+
 		CommentRepository commentsRepository = CommentRepository.getInstance();
-		
-		//тука взимам всичките ид-та на постовете в избраната секция и след това долу в stream-a
-		//филтрирам мапа-а с постове по ид-та, които се съдържат в сета който съм взел от секцията от която трябва
-		//да се листнат постовете след това взимам само value-тата от мапа понеже само те трябват
-		//сортирам по дата от най-нови към най-стари постове и другото е стандарно като в другите 
-		//команди показвам всеки пост от секцията с всичките му коментари.
+
+		// тука взимам всичките ид-та на постовете в избраната секция и след това долу в
+		// stream-a
+		// филтрирам мапа-а с постове по ид-та, които се съдържат в сета който съм взел
+		// от секцията от която трябва
+		// да се листнат постовете след това взимам само value-тата от мапа понеже само
+		// те трябват
+		// сортирам по дата от най-нови към най-стари постове и другото е стандарно като
+		// в другите
+		// команди показвам всеки пост от секцията с всичките му коментари.
 		Set<Integer> postIds = section.getPostIds();
+
 		if (postIds.size() == 0) {
 			System.out.println(NO_POST_MESSAGE);
 		} else {
-			this.posts
-				.entrySet()
-				.stream()
-				.filter(kvp -> postIds.contains(kvp.getKey()))
-				.map(kvp -> kvp.getValue())
-				.sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
-				.forEach(p -> System.out.println(p + System.lineSeparator()
-						+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
-						+ System.lineSeparator()));
+			this.posts.entrySet().stream().filter(kvp -> postIds.contains(kvp.getKey())).map(kvp -> kvp.getValue())
+					.sorted((p1, p2) -> p2.getDate().compareTo(p1.getDate()))
+					.forEach(p -> System.out.println(p + System.lineSeparator()
+							+ getPrintedComments(commentsRepository.getCommentsByPostId(p.getId()))
+							+ System.lineSeparator()));
 		}
-		
+
 	}
-	
+
 	private Set<String> getTagNamesByTagIds(Set<Integer> tagIds) {
 		TagRepository tagRepository = TagRepository.getInstance();
 		Set<String> tagNames = new HashSet<>();
-		
+
 		for (Integer tagId : tagIds) {
 			Tag tag = tagRepository.getTagById(tagId);
-			
+
 			if (tag != null) {
 				tagNames.add(tag.getName());
 			}
 		}
-		
+
 		return tagNames;
 	}
 
@@ -301,5 +289,15 @@ public class PostRepository {
 		sb.append(System.lineSeparator());
 
 		return sb.toString();
+	}
+
+	public  void getProcess() {
+		for (Post post : this.posts.values()) {
+			// && Session.getInstance().getUser() != null &&Session.getInstance().getUser().getId() == post.getUser().getId()
+			if (!post.isDownload()) {
+				post.downloadImage();
+			}
+		}
+		
 	}
 }
