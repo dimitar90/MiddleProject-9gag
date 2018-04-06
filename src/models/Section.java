@@ -7,14 +7,14 @@ import java.util.Set;
 public class Section {
 	private int id;
 	private String name;
-	private Set<Integer> postIds;
+	private Set<Post> post;
 	
 	public Section() {
-		this.postIds = new HashSet<>();
+		this.post = new HashSet<>();
 	}
 	
-	public void addPost(int postId) {
-		this.postIds.add(postId);
+	public void addPost(Post post) {
+		this.post.add(post);
 	}
 	
 	public String getName() {
@@ -33,7 +33,22 @@ public class Section {
 		return this.id;
 	}
 
-	public Set<Integer> getPostIds() {
-		return Collections.unmodifiableSet(this.postIds);
+	public Set<Post> getPost() {
+		return Collections.unmodifiableSet(this.post);
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Section)) {
+			return false;
+		}
+		
+		Section section = (Section) obj;
+		return this.id == section.id;
 	}
 }

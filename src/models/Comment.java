@@ -1,25 +1,28 @@
 package models;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import utils.IDeserialize;
 
-public class Comment implements IDeserialize{
-	private static int idGenerator;
+public class Comment {
 	private int id;
 	private String content;
-	private Date date;
+	private LocalDateTime dateTime;
 	private Post post;
 	private User user;
 
-	static {
-		idGenerator = 0;
+	public Comment() {
+		
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	// TODO validation
 	public Comment(String content) {
-		this.id = ++idGenerator;
-		this.date = new Date();
+		this.dateTime = LocalDateTime.now();
 		this.setContent(content);
 	}
 
@@ -31,7 +34,7 @@ public class Comment implements IDeserialize{
 		return content;
 	}
 
-	private void setContent(String content) {
+	public void setContent(String content) {
 		this.content = content;
 	}
 
@@ -51,17 +54,14 @@ public class Comment implements IDeserialize{
 		this.user = user;
 	}
 
-	public Date getDate() {
-		return date;
+	public LocalDateTime getDateTime() {
+		return dateTime;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDateTime(LocalDateTime dateTime) {
+		this.dateTime = dateTime;
 	}
 
-	public static void setValueToIdGenerator(int lastId) {
-		idGenerator = lastId;
-	}
 
 	public int getPostId() {
 		return this.post.getId();
@@ -78,7 +78,7 @@ public class Comment implements IDeserialize{
 	@Override
 	public String toString() {
 		return "Comment content: " + this.content + ". Author: " + this.user.getUsername() + ". Written on: "
-				+ this.getDate();
+				+ this.dateTime.toString();
 	}
 
 }

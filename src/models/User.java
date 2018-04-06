@@ -6,26 +6,21 @@ import java.util.Set;
 import annotations.Column;
 import utils.IDeserialize;
 
-public class User implements IDeserialize{
+public class User {
 	private int id;
 	
-	@Column(name = "username")
 	private String username;
-	
-	@Column(name = "password")
 	private String password;
-	
-	@Column(name = "email")
 	private String email;
 	
-	private Set<Integer> postIds;
-	private Set<Integer> commentIds;
-	private Set<Integer> ratedPostIds;
+	private Set<Post> posts;
+	private Set<Comment> comments;
+	private Set<Post> ratedPosts;
 	
 	public User() {
-		this.postIds = new HashSet<>();
-		this.commentIds = new HashSet<>();
-		this.ratedPostIds = new HashSet<>();
+		this.posts = new HashSet<>();
+		this.comments = new HashSet<>();
+		this.ratedPosts = new HashSet<>();
 	}
 
 	public User(String username, String password, String email) {
@@ -67,24 +62,53 @@ public class User implements IDeserialize{
 		this.password = password;
 	}
 
-	public void addPost(int postId) {
-		this.postIds.add(postId);
+	public void addPost(Post post) {
+		this.posts.add(post);
 	}
 
 
-	public void addComment(int commentId) {
-		this.commentIds.add(commentId);
+	public void addComment(Comment comment) {
+		this.comments.add(comment);
 	}
 
-	public void deletePostById(int postId) {
-		this.postIds.remove(postId);
+	public void deletePost(Post post) {
+		if (this.posts.contains(post)) {
+			this.posts.remove(post);
+		}
 	}
 	
-	public void addRatedPostId(int postId) {
-		this.ratedPostIds.add(postId);
+	public void addRatedPost(Post post) {
+		this.ratedPosts.add(post);
 	}
 	
-	public boolean checkForRatedPostById(int postId) {
-		return this.ratedPostIds.contains(postId);
+	public boolean checkForRatedPost(Post post) {
+		return this.ratedPosts.contains(post);
+	}
+	
+	public void setPosts(Set<Post> posts) {
+		this.posts = posts;
+	}
+
+	public void setComments(Set<Comment> comments) {
+		this.comments = comments;
+	}
+	
+	public Post getUsersPostById(int id) {
+		return this.posts.stream().filter(p -> p.getId() == id).findFirst().get();
+	}
+
+	@Override
+	public int hashCode() {
+		return this.id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof User)) {
+			return false;
+		}
+		
+		User user = (User) obj;
+		return this.id == user.id;
 	}
 }

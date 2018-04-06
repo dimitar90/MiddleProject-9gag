@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -19,7 +20,7 @@ import exceptions.PostException;
 import repositories.TagRepository;
 import utils.IDeserialize;
 
-public class Post implements IDeserialize {
+public class Post {
 	private static final String FINAL_MESSAGE = "Download completed. . .";
 	private static final int MULTIPLYER = 100;
 	private static final double INITIAL_PERCENT_OF_DOWNLOAD = 0.00;
@@ -28,57 +29,80 @@ public class Post implements IDeserialize {
 	private static final String MESSAGE_INVALID_NAME = "Invalid parameters for name";
 	private static final String PATH_RES = "resources" + File.separator;
 
-	private static int nextPostId;
 	private int id;
 	private String internetUrl;
 	private String localUrl;
-	private Date date;
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	private LocalDateTime dateTime;
 	private User user;
 	private String description;
-	private Set<Integer> commentIds;
-	private Set<Integer> tagIds;
-	private List<Byte> ratings;
+	private Set<Comment> comments;
+	private Set<Tag> tags;
+	private List<Integer> ratings;
 	private Section section;
 	private volatile boolean hasDownload;
 
-	static {
-		nextPostId = 0;
+	public Post() {
+		this.comments = new HashSet<>();
+		this.tags = new HashSet<>();
+		this.ratings = new ArrayList<>();
 	}
 
 	public Post(String description, String url, Section section) throws PostException {
+		this();
 		this.setDescription(description);
-		this.id = ++nextPostId;
-		this.commentIds = new HashSet<>();
 		this.internetUrl = url;
-		this.tagIds = new HashSet<>();
-		this.date = new Date();
-		this.ratings = new ArrayList<>();
+		this.dateTime = LocalDateTime.now();
 		this.section = section;
 		this.hasDownload = false;
 	}
-
-	public void addComment(int commentId) {
-		this.commentIds.add(commentId);
+	
+	public String getInternetUrl() {
+		return internetUrl;
 	}
 
-	private void setDescription(String description) throws PostException {
-		if (description != null && description.length() >= 5) {
-			this.description = description;
-		} else {
-			throw new PostException(MESSAGE_INVALID_DESCRIPTION);
-		}
+	public void setInternetUrl(String internetUrl) {
+		this.internetUrl = internetUrl;
 	}
 
-	public static void setValueToIdPostGenerator(int lastId) {
-		nextPostId = lastId;
+	public Section getSection() {
+		return section;
 	}
 
-	public void addTagId(int tagId) {
-		this.tagIds.add(tagId);
+	public void setSection(Section section) {
+		this.section = section;
 	}
 
-	public Set<Integer> getTagIds() {
-		return Collections.unmodifiableSet(this.tagIds);
+	public boolean isHasDownload() {
+		return hasDownload;
+	}
+
+	public void setHasDownload(boolean hasDownload) {
+		this.hasDownload = hasDownload;
+	}
+
+	public void addComment(Comment comment) {
+		this.comments.add(comment);
+	}
+
+	public void setDescription (String description) {
+		this.description = description;
+//		if (description != null && description.length() >= 5) {
+//			this.description = description;
+//		} else {
+//			throw new PostException(MESSAGE_INVALID_DESCRIPTION);
+//		}
+	}
+
+	public void addTag(Tag tag) {
+		this.tags.add(tag);
+	}
+
+	public Set<Tag> getTags() {
+		return Collections.unmodifiableSet(this.tags);
 	}
 
 	public int getId() {
@@ -95,8 +119,12 @@ public class Post implements IDeserialize {
 		}
 	}
 
-	public Date getDate() {
-		return date;
+	public String getDescription() {
+		return description;
+	}
+
+	public LocalDateTime getDateTime() {
+		return dateTime;
 	}
 
 	public String getLocalUrl() {
@@ -107,11 +135,11 @@ public class Post implements IDeserialize {
 		this.localUrl = localUrl;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDateTime(LocalDateTime dateTime) {
+		this.dateTime = dateTime;
 	}
 
-	public void addRating(byte rating) {
+	public void addRating(int rating) {
 		this.ratings.add(rating);
 	}
 
@@ -120,7 +148,7 @@ public class Post implements IDeserialize {
 	}
 
 	public boolean anyComments() {
-		return this.commentIds.size() > 0;
+		return this.comments.size() > 0;
 	}
 
 	public boolean isDownload() {
@@ -130,27 +158,25 @@ public class Post implements IDeserialize {
 	public void setFlag(boolean hasUpload) {
 		this.hasDownload = hasUpload;
 	}
+	
 
 	@Override
 	public String toString() {
 		int rating = this.getRating();
-		TagRepository tagRepository = TagRepository.getInstance();
 		Set<String> tagNames = new HashSet<>();
 
-		for (Integer id : this.tagIds) {
-			Tag tag = tagRepository.getTagById(id);
+		for (Tag tag : this.tags) {
 			if (tag != null) {
 				tagNames.add(tag.getName());
 			}
 		}
 
 		return "Post description: " + this.description + ". Author: " + user.getUsername() + " Content(Url): "
-				+ this.internetUrl + System.lineSeparator() + "Post rating: " + rating + " Written on: " + this.date
+				+ this.internetUrl + System.lineSeparator() + "Post rating: " + rating + " Written on: " + this.dateTime.toString()
 				+ " Section: " + this.section.getName() + " Tags: " + String.join(", ", tagNames);
 	}
 
 	public void downloadImage() {
-
 		String dirName = this.user.getUsername();
 		File file = new File(PATH_RES + dirName);
 
@@ -190,6 +216,20 @@ public class Post implements IDeserialize {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return this.id;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Post)) {
+			return false;
+		}
+		
+		Post post = (Post) obj;
+		return this.id == post.id;
 	}
 }

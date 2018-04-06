@@ -1,15 +1,11 @@
 package models;
 
-import utils.IDeserialize;
-
-public class Tag implements IDeserialize{
-	private static int idGenerator = 0;
+public class Tag {
 	private int id;
 	private String name;
 
-	public Tag(String name) {
-		this.id = ++idGenerator;
-		this.setName(name);
+	public Tag() {
+		
 	}
 
 	public int getId() {
@@ -28,7 +24,18 @@ public class Tag implements IDeserialize{
 		this.name = name;
 	}
 	
-	public static void setValueToIdGenerator(int lastId) {
-		idGenerator = lastId;
+	@Override
+	public int hashCode() {
+		return this.id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof Tag)) {
+			return false;
+		}
+		
+		Tag tag = (Tag) obj;
+		return this.id == tag.id;
 	}
 }

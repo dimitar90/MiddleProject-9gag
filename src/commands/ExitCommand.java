@@ -23,7 +23,6 @@ public class ExitCommand extends Command {
 	@Override
 	public String execute() throws UserException, IOException, SerialException, SerializeException {
 		CommentRepository.getInstance().exportComment();
-		TagRepository.getInstance().exportTag();
 		PostRepository.getInstance().exportPost();
 		
 		System.exit(0);

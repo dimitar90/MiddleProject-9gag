@@ -25,18 +25,18 @@ import utils.JsonSerializer;
 import utils.Session;
 
 public class CommentRepository {
+	public static final Map<Integer, Comment> comments = new HashMap<>();
+	
 	private static final String THIS_POST_DOES_NOT_EXIST = "This post does not exist!";
 	private static final String NOT_EXIST_COMMENT_MESSAGE = "This comment does not exist!";
 	private static final String NOT_HAVE_AUTHORIZATION_MESSAGE = "Not have authorization for delete this comment!";
 	private static final String COMMENT_PATH = "comments.json";
 
 	private static CommentRepository commentRepository;
-	private Map<Integer, Comment> comments;
 	private JsonSerializer serializer;
 
 	private CommentRepository() {
 		this.serializer = new JsonSerializer();
-		this.comments = new HashMap<>();
 
 	}
 
@@ -81,7 +81,7 @@ public class CommentRepository {
 //		.filter(k -> k.getKey() == commentId)
 //		.filter(v -> v.getValue().getPostId() == postId)
 //		.forEach(v -> v.setContent(content));
-		this.comments
+		comments
 		.values()
 		.stream()
 		.filter(v -> v.getPostId() == postId)
@@ -103,7 +103,7 @@ public class CommentRepository {
 		
 		isAuthorizated(commentId);
 
-		this.comments.remove(commentId);
+		comments.remove(commentId);
 	}
 
 //	public void serialize() throws IOException {
@@ -117,7 +117,7 @@ public class CommentRepository {
 //		}
 //	}
 	public void exportComment() throws SerializeException, SerialException {
-		this.serializer.serialize(this.comments, COMMENT_PATH);
+		this.serializer.serialize(comments, COMMENT_PATH);
 	}
 
 	public void deserialize() throws FileNotFoundException {
@@ -134,39 +134,47 @@ public class CommentRepository {
 		Map<Integer, Comment> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Comment>>() {
 		}.getType());
 
-		this.comments = map;
+		comments = map;
 	}
 
 //	public void importComment() {
 //		this.serializer.deserialize(this.comments, COMMENT_PATH);
 //	}
 	private void isValidComment(int arg) throws CommentException {
-		if (!this.comments.containsKey(arg)) {
+		if (!comments.containsKey(arg)) {
 			throw new CommentException(NOT_EXIST_COMMENT_MESSAGE);
 		}
 	}
 
 	private void isAuthorizated(int arg) throws CommentException {
-		if (Session.getInstance().getUser().getId() != this.comments.get(arg).getUser().getId()) {
+		if (Session.getInstance().getUser().getId() != comments.get(arg).getUser().getId()) {
 			throw new CommentException(NOT_HAVE_AUTHORIZATION_MESSAGE);
 		}
 	}
 
 	public List<Comment> getCommentsByPostId(int postId) {
-		return this.comments.values().stream().filter(c -> c.getPost().getId() == postId)
+		return comments.values().stream().filter(c -> c.getPost().getId() == postId)
 				.sorted((c1, c2) -> c2.getDate().compareTo(c1.getDate())).collect(Collectors.toList());
 	}
 
 	public void deleteAllCommentsCurrentPostById(int postId) {
-		this.comments.values().removeIf(v -> v.getPostId() == postId);
+		comments.values().removeIf(v -> v.getPostId() == postId);
 	}
 
 	public int getLastId() {
-		if (this.comments == null || this.comments.size() == 0) {
+		if (comments == null || comments.size() == 0) {
 			return 0;
 		}
 
-		return this.comments.values().stream().sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).findFirst()
+		return comments.values().stream().sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).findFirst()
 				.get().getId();
+	}
+
+	public Comment getCommentById(Integer commentId) {
+		if (!comments.containsKey(commentId)) {
+			return null;
+		}
+		
+		return comments.get(commentId);
 	}
 }

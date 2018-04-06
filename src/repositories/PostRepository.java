@@ -2,6 +2,7 @@ package repositories;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,8 @@ import utils.JsonSerializer;
 import utils.Session;
 
 public class PostRepository {
+	public static final Map<Integer, Post> posts = new HashMap<Integer, Post>();
+
 	private static final int DOWN_GRADE = -1;
 
 	private static final int UP_GRADE = 1;
@@ -51,12 +54,10 @@ public class PostRepository {
 	
 	public static PostRepository postRepository;
 	
-	private Map<Integer, Post> posts;
 	private JsonSerializer serializer;
 
 	private PostRepository() {
 		this.serializer = new JsonSerializer();
-		this.posts = new HashMap<>();
 	}
 
 	public static PostRepository getInstance() {
@@ -291,7 +292,7 @@ public class PostRepository {
 	}
 
 	public  void getProcess() {
-		for (Post post : this.posts.values()) {
+		for (Post post : posts.values()) {
 			// && Session.getInstance().getUser() != null &&Session.getInstance().getUser().getId() == post.getUser().getId()
 			if (!post.isDownload()) {
 				post.downloadImage();
