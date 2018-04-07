@@ -30,7 +30,7 @@ public class ShowRatingPostsCommand extends Command {
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {
 			throw new PostException(Command.INVALID_DATA);
 		}
-
+		
 		PostRepository.getInstance().listAllPostsSortedByRating();
 
 		return SUCCESFULLY_MESSAGE;

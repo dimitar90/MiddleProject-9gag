@@ -1,9 +1,6 @@
 package models;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-
-import utils.IDeserialize;
 
 public class Comment {
 	private int id;
@@ -62,23 +59,17 @@ public class Comment {
 		this.dateTime = dateTime;
 	}
 
-
 	public int getPostId() {
 		return this.post.getId();
 	}
 
-	public void setNewContent(String content) {
-		if (content != null) {
-			this.content = content;
-		} else {
-			System.out.println("right something funny and nice for new content please");
-		}
-	}
-
 	@Override
 	public String toString() {
-		return "Comment content: " + this.content + ". Author: " + this.user.getUsername() + ". Written on: "
-				+ this.dateTime.toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append("  -Comment content: ").append(this.content).append(System.lineSeparator());
+		sb.append("   Author: ").append(this.user.getUsername()).append(System.lineSeparator());
+		sb.append("   Written on: ").append(this.dateTime).append(System.lineSeparator()).append("===============================").append(System.lineSeparator());
+	
+		return sb.toString();
 	}
-
 }

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import connection.DatabaseConnection;
+import exceptions.SectionException;
 import models.Comment;
 import models.Post;
 import models.Section;
@@ -26,8 +27,8 @@ public class DatabaseLoader {
 	private static final String SUCCESSFULLY_LOAD_DATABASE_MESSAGE = "Successfully loaded database for %d ms.";
 	
 	private static final String GET_ALL_USERS_QUERY = "SELECT id, username, email FROM users";
-	private static final String GET_ALL_POSTS_QUERY = "SELECT id, description, internet_url, local_url, has_download, date_time, author_id FROM posts";
-	private static final String GET_ALL_COMMENTS_QUERY = "SELECT id, content, date_time, author_id FROM comments";
+	private static final String GET_ALL_POSTS_QUERY = "SELECT id, description, internet_url, local_url, has_download, date_time, section_id, author_id FROM posts";
+	private static final String GET_ALL_COMMENTS_QUERY = "SELECT id, content, date_time, author_id, post_id FROM comments";
 	private static final String GET_ALL_TAGS_QUERY = "SELECT id, name FROM tags";
 	private static final String GET_ALL_SECTIONS_QUERY = "SELECT id, name FROM sections";
 	private static final String GET_ALL_COMENT_IDS_BY_POST_ID_QUERY = "SELECT id FROM comments WHERE post_id = ?";
@@ -39,7 +40,7 @@ public class DatabaseLoader {
 	private static final String GET_POST_IDS_BY_SECTION_ID = "SELECT id FROM posts WHERE section_id = ?";
 	
 	
-	public static void loadDatabase() throws SQLException {
+	public static void loadDatabase() throws SQLException, SectionException {
 		Connection conn = DatabaseConnection.getConnection();
 		System.out.println(LOADING_DATABASE_MESSAGE);
 		long startLoadingTime = System.currentTimeMillis();
@@ -99,7 +100,7 @@ public class DatabaseLoader {
 			e.printStackTrace();
 		}
 
-		// Load posts with their author
+		// Load posts with their author and section
 		try (PreparedStatement preparedStatment = conn.prepareStatement(GET_ALL_POSTS_QUERY)) {
 			ResultSet rsPosts = preparedStatment.executeQuery();
 
@@ -110,10 +111,11 @@ public class DatabaseLoader {
 				String localUrl = rsPosts.getString("local_url");
 				boolean hasDownload = rsPosts.getBoolean("has_download");
 				LocalDateTime dateTime = rsPosts.getTimestamp("date_time").toLocalDateTime();
-				
-				// понеже вече съм заредил всички юзъри в репоситорито направо ще ги взимам от там
+				int sectionId = rsPosts.getInt("section_id");
+				// понеже вече съм заредил всички юзъри и секции в репоситоритата направо ще ги взимам от там
 				User author = UserRepository.getInstance().getUserById(rsPosts.getInt("author_id"));
-
+				Section section = SectionRepository.getInstance().getSectionById(sectionId);
+				
 				Post post = new Post();
 				post.setId(postId);
 				post.setDescription(description);
@@ -122,10 +124,30 @@ public class DatabaseLoader {
 				post.setHasDownload(hasDownload);
 				post.setDateTime(dateTime);
 				post.setUser(author);
-
+				post.setSection(section);
 				PostRepository.posts.put(postId, post);
 			}
 		}
+		
+		// load all tags of each post
+				for (Post post : PostRepository.posts.values()) {
+					try (PreparedStatement pr = conn.prepareStatement(GET_ALL_TAGS_BY_POST_ID_QUERY)) {
+						pr.setInt(1, post.getId());
+						ResultSet rs = pr.executeQuery();
+
+						HashSet<Integer> tagIds = new HashSet<>();
+						while (rs.next()) {
+							tagIds.add(rs.getInt("tag_id"));
+						}
+						
+						TagRepository tagRepository = TagRepository.getInstance();
+						for (Integer tagId : tagIds) {
+							post.addTag(tagRepository.getTagById(tagId));
+						}
+					} catch (Exception e) {
+						e.getMessage();
+					}
+				}
 
 		// load rating for each post
 		try (PreparedStatement pr = conn.prepareStatement(GET_RATING_FOR_POST_BY_ID)) {
@@ -188,25 +210,7 @@ public class DatabaseLoader {
 			}
 		}
 
-		// load all tags of each post
-		for (Post post : PostRepository.posts.values()) {
-			try (PreparedStatement pr = conn.prepareStatement(GET_ALL_TAGS_BY_POST_ID_QUERY)) {
-				pr.setInt(1, post.getId());
-				ResultSet rs = pr.executeQuery();
-
-				HashSet<Integer> tagIds = new HashSet<>();
-				while (rs.next()) {
-					tagIds.add(rs.getInt("tag_id"));
-				}
-				
-				TagRepository tagRepository = TagRepository.getInstance();
-				for (Integer tagId : tagIds) {
-					post.addTag(tagRepository.getTagById(tagId));
-				}
-			} catch (Exception e) {
-				e.getMessage();
-			}
-		}
+		
 
 		// load all comments for each user
 		for (User user : UserRepository.users.values()) {

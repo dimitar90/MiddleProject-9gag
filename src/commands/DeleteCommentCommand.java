@@ -1,6 +1,7 @@
 package commands;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import exceptions.CommentException;
@@ -21,7 +22,7 @@ public class DeleteCommentCommand extends Command {
 	}
 	
 	@Override
-	public String execute() throws UserException, IOException, CommentException {
+	public String execute() throws Exception {
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTH_LENGTH)) {
 			throw new CommentException(Command.INVALID_DATA);
 		}

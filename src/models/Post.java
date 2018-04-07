@@ -5,20 +5,17 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import exceptions.PostException;
-import repositories.TagRepository;
-import utils.IDeserialize;
 
 public class Post {
 	private static final String FINAL_MESSAGE = "Download completed. . .";
@@ -46,7 +43,7 @@ public class Post {
 	private volatile boolean hasDownload;
 
 	public Post() {
-		this.comments = new HashSet<>();
+		this.comments = new TreeSet<Comment>((c1, c2) -> c2.getDateTime().compareTo(c1.getDateTime()));
 		this.tags = new HashSet<>();
 		this.ratings = new ArrayList<>();
 	}
@@ -87,14 +84,15 @@ public class Post {
 	public void addComment(Comment comment) {
 		this.comments.add(comment);
 	}
+	
+	public void removeComment(Comment comment) {
+		if (this.comments.contains(comment)) {
+			this.comments.remove(comment);
+		}
+	}
 
 	public void setDescription (String description) {
 		this.description = description;
-//		if (description != null && description.length() >= 5) {
-//			this.description = description;
-//		} else {
-//			throw new PostException(MESSAGE_INVALID_DESCRIPTION);
-//		}
 	}
 
 	public void addTag(Tag tag) {
@@ -159,21 +157,8 @@ public class Post {
 		this.hasDownload = hasUpload;
 	}
 	
-
-	@Override
-	public String toString() {
-		int rating = this.getRating();
-		Set<String> tagNames = new HashSet<>();
-
-		for (Tag tag : this.tags) {
-			if (tag != null) {
-				tagNames.add(tag.getName());
-			}
-		}
-
-		return "Post description: " + this.description + ". Author: " + user.getUsername() + " Content(Url): "
-				+ this.internetUrl + System.lineSeparator() + "Post rating: " + rating + " Written on: " + this.dateTime.toString()
-				+ " Section: " + this.section.getName() + " Tags: " + String.join(", ", tagNames);
+	public Set<Comment> getAllComments() {
+		return Collections.unmodifiableSet(this.comments);
 	}
 
 	public void downloadImage() {
@@ -231,5 +216,22 @@ public class Post {
 		
 		Post post = (Post) obj;
 		return this.id == post.id;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		List<String> tagNames = this.tags.stream().map(t -> t.getName()).collect(Collectors.toList());
+		
+		sb.append("Post description: ").append(this.description).append(System.lineSeparator());
+		sb.append("Post internetUrl: ").append(this.internetUrl).append(System.lineSeparator());
+		sb.append("Post section: ").append(this.section.getName()).append(System.lineSeparator());
+		sb.append("Post rating: ").append(this.getRating()).append(System.lineSeparator());
+		sb.append("Author: ").append(this.user.getUsername()).append(System.lineSeparator());
+		sb.append("Wrriten on: ").append(this.dateTime).append(System.lineSeparator());
+		sb.append("Tags: ").append(String.join(", ", tagNames)).append(System.lineSeparator());
+		this.comments.forEach(c -> sb.append(c));
+		
+		return sb.toString();
 	}
 }

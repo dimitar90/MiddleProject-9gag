@@ -31,11 +31,8 @@ public class DeletePostCommand extends Command{
 			throw new UserException(FAILED_LOGIN_MESSAGE);
 		}
 				
-		// извличаме ID-то на текущият пост
 		int postId = Integer.parseInt(this.getData().get(0));
-		//трием всички коментари в този пост 
 		
-		//трием поста
 		PostRepository.getInstance().delete(postId);
 		
 		return SUCCESSFULLY_MESSAGE;

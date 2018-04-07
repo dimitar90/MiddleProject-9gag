@@ -18,7 +18,6 @@ public class ShowLatestPostsCommand extends Command{
 
 	//command example
 	//show latest posts
-	
 	public ShowLatestPostsCommand(List<String> data) {
 		super(data);
 	}
@@ -26,12 +25,11 @@ public class ShowLatestPostsCommand extends Command{
 	@Override
 	public String execute()
 			throws UserException, IOException, CommentException, SerialException, PostException, SerializeException {
-		//тука няма нужда от проверка за логнат юзър понеже и гостите могат да разглеждат
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {
 			throw new PostException(Command.INVALID_DATA);
 		}
 		
-		PostRepository.getInstance().listAllPostsSortedByLatest();
+		PostRepository.getInstance().listAllPostsSortedByDate(false);
 		
 		return SUCCESFULLY_MESSAGE;
 	}

@@ -2,6 +2,7 @@ package core;
 
 import java.sql.SQLException;
 
+import exceptions.SectionException;
 import utils.DatabaseLoader;
 import utils.Downloader;
 
@@ -11,7 +12,12 @@ public class Application {
 	private static Downloader downloader = new Downloader();
 
 	public static void main(String[] args) throws SQLException {
-		DatabaseLoader.loadDatabase();
+		try {
+			DatabaseLoader.loadDatabase();
+		} catch (SectionException e) {
+			System.out.println("neshto ne e zaredeno");
+			e.printStackTrace();
+		}
 		
 		//downloader.setDaemon(true);
 		//downloader.start();

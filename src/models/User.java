@@ -3,9 +3,6 @@ package models;
 import java.util.HashSet;
 import java.util.Set;
 
-import annotations.Column;
-import utils.IDeserialize;
-
 public class User {
 	private int id;
 	
@@ -81,8 +78,8 @@ public class User {
 		this.ratedPosts.add(post);
 	}
 	
-	public boolean checkForRatedPost(Post post) {
-		return this.ratedPosts.contains(post);
+	public boolean checkForRatedPostByPostId(int postId) {
+		return this.ratedPosts.stream().anyMatch(p -> p.getId() == postId);
 	}
 	
 	public void setPosts(Set<Post> posts) {
@@ -110,5 +107,11 @@ public class User {
 		
 		User user = (User) obj;
 		return this.id == user.id;
+	}
+
+	public void removeComment(Comment comment) {
+		if (this.comments.contains(comment)) {
+			this.comments.remove(comment);
+		}
 	}
 }

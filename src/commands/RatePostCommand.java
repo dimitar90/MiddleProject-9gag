@@ -16,7 +16,6 @@ import utils.Session;
 public class RatePostCommand extends Command {
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String MEESAGE_NO_USER = "If u want to rated a post u have to be logged";
-	private static final String SUCCESSFULLY_MESSAGE = "You have rated the post successfully.";
 	
 	// rate post | postId postGrade(rate must be -1 or 1)
 	public RatePostCommand(List<String> data) {
@@ -35,11 +34,11 @@ public class RatePostCommand extends Command {
 		}
 		
 		int postId = Integer.parseInt(this.getData().get(0));
-		byte grade = Byte.parseByte(this.getData().get(1));
+		int grade = Byte.parseByte(this.getData().get(1));
 		
-		PostRepository.getInstance().addGradeToPost(postId, grade);
+		String result = PostRepository.getInstance().addGradeToPost(postId, grade);
 		
-		return SUCCESSFULLY_MESSAGE;
+		return result;
 	}
 
 }
