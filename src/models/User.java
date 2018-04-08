@@ -114,4 +114,8 @@ public class User {
 			this.comments.remove(comment);
 		}
 	}
+
+	public void removeRatedPost(Post post) {
+		this.ratedPosts.remove(post);
+	}
 }
