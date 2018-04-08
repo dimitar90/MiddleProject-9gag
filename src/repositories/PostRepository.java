@@ -1,21 +1,14 @@
 package repositories;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import connection.DatabaseConnection;
 import exceptions.PostException;
@@ -24,12 +17,11 @@ import models.Comment;
 import models.Post;
 import models.Section;
 import models.Tag;
-import models.User;
 import utils.Session;
 
 public class PostRepository {
-	private static final String INSERT_POST_QUERY = "INSERT INTO posts (description , internet_url , section_id , author_id) VALUES (?,?,?,?)";
-	private static final String INSERT_POST_TAG_QUERY = "INSERT INTO post_tag WHERE post_id = ?";
+	private static final String INSERT_POST_QUERY = "INSERT INTO posts (description, internet_url, date_time, author_id, section_id) VALUES(?, ?, ?, ?, ?)";
+	private static final String INSERT_POST_TAG_QUERY = "INSERT INTO post_tag (post_id,tag_id) VALUES (?,?)";
 	public static final Map<Integer, Post> posts = new HashMap<Integer, Post>();
 
 	private static final int DOWN_GRADE = -1;
@@ -99,47 +91,59 @@ public class PostRepository {
 
 	public Post addPost(String description, String url, String sectionName, List<String> tags)
 			throws PostException, SectionException {
-		//Get section by name
+		// Get section by name
 		Section section = this.refToSectionRepo.getSectionByName(sectionName);
 		List<String> allSectionNames = this.refToSectionRepo.getAllSectionNames();
 
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}
+
 		// Open connection to insert post
-		PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_QUERY,
-				PreparedStatement.RETURN_GENERATED_KEYS);
-		
-		int sectionId = section.getId();
-		int autorId = Session.getInstance().getUser().getId();
-		LocalDateTime dateTime = LocalDateTime.now();
+		Post post = null;
+		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_QUERY,
+				PreparedStatement.RETURN_GENERATED_KEYS);) {
 
-		ps.setString(1, description);
-		ps.setString(2, url);
-		ps.setInt(3, sectionId);
-		ps.setInt(4, autorId);
-		ps.executeUpdate();
+			int sectionId = section.getId();
+			int userId = Session.getInstance().getUser().getId();
+			LocalDateTime dateTime = LocalDateTime.now();
+			Timestamp timeStamp = Timestamp.valueOf(dateTime);
 
-		ResultSet result = ps.getGeneratedKeys();
-		result.next();
-		int postId = result.getInt(1);
+			ps.setString(1, description);
+			ps.setString(2, url);
+			ps.setTimestamp(3, timeStamp);
+			ps.setInt(4, userId);
+			ps.setLong(5, sectionId);
+			ps.executeUpdate();
 
-		Post post = new Post(postId, description, url, section, dateTime);
-		ps.close();
-		// Open connection to insert post id and tag id into mapping table post_tag
-		ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_TAG_QUERY);
+			ResultSet result = ps.getGeneratedKeys();
+			result.next();
+			int postId = result.getInt(1);
+
+			post = new Post(postId, description, url, section, dateTime);
+		}
+
 		TagRepository tagRepo = TagRepository.getInstance();
-		
+		Set<Integer> tagIds = new HashSet<>();
+
 		for (String tagName : tags) {
-			tagRepo.addTag(tagName);
-			int tagId = tagRepo.getTagByName(tagName).getId();
-			ps.setInt(1, tagId);
-			Tag t = tagRepo.getTagById(tagId);
+			Tag t = tagRepo.getTagByName(tagName);
+			if (t == null) {
+				t = tagRepo.addTag(tagName);
+			}
+			int tagId = t.getId();
+			tagIds.add(tagId);
 			post.addTag(t);
 		}
 
-		ps.close();
-		this.posts.put(postId, post);
+		// Open connection to insert post id and tag id into mapping table post_tag
+		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_TAG_QUERY);) {
+			for (Integer id : tagIds) {
+				ps.setInt(1, post.getId());
+				ps.setInt(2, id);
+			}
+		}
+		this.posts.put(post.getId(), post);
 		return post;
 	}
 
@@ -147,24 +151,25 @@ public class PostRepository {
 	// this.serializer.serialize(this.posts, POSTS_PATH);
 	// }
 
-//	public void deserialize() throws IOException {
-//		File file = new File(POSTS_PATH);
-//
-//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-//		StringBuilder sb = new StringBuilder();
-//
-//		try (Scanner sc = new Scanner(file)) {
-//			while (sc.hasNextLine()) {
-//				String line = sc.nextLine();
-//				sb.append(line);
-//			}
-//		}
-//
-//		Map<Integer, Post> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Post>>() {
-//		}.getType());
-//
-//		this.posts = map;
-//	}
+	// public void deserialize() throws IOException {
+	// File file = new File(POSTS_PATH);
+	//
+	// Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	// StringBuilder sb = new StringBuilder();
+	//
+	// try (Scanner sc = new Scanner(file)) {
+	// while (sc.hasNextLine()) {
+	// String line = sc.nextLine();
+	// sb.append(line);
+	// }
+	// }
+	//
+	// Map<Integer, Post> map = gson.fromJson(sb.toString(), new
+	// TypeToken<Map<Integer, Post>>() {
+	// }.getType());
+	//
+	// this.posts = map;
+	// }
 
 	public int getLastId() {
 		if (this.posts == null || this.posts.size() == 0) {
@@ -192,13 +197,13 @@ public class PostRepository {
 			throw new PostException(NOT_EXIST_POST_MEESAGE);
 		}
 
-		User user = Session.getInstance().getUser();
-		if (user.checkForRatedPostById(postId)) {
-			throw new PostException(ALREADY_RATED_POST_MESSAGE);
-		}
-
-		this.posts.get(postId).addRating(grade);
-		user.addRatedPostId(postId);
+		// User user = Session.getInstance().getUser();
+		// if (user.checkForRatedPostById(postId)) {
+		// throw new PostException(ALREADY_RATED_POST_MESSAGE);
+		// }
+		//
+		// this.posts.get(postId).addRating(grade);
+		// user.addRatedPostId(postId);
 	}
 
 	public void listPostsByTagName(String tagName) {
