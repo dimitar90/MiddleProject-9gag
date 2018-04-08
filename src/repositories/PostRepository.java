@@ -21,6 +21,8 @@ import models.User;
 import utils.Session;
 
 public class PostRepository {
+	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted";
+	private static final String DELETE_POST_QUERY = "DELETE FROM posts WHERE id = ?";
 	private static final String MSG_SUCCESSFULY_GRADED = "Successfuly graded post";
 	private static final String INSERT_POST_RATING_USER_QUERY = "INSERT INTO rating_post_user (post_id, user_id, grade) VALUES(?, ?, ?)";
 	private static final String INSERT_POST_QUERY = "INSERT INTO posts (description, internet_url, date_time, author_id, section_id) VALUES(?, ?, ?, ?, ?)";
@@ -28,23 +30,13 @@ public class PostRepository {
 	public static final Map<Integer, Post> POSTS = new HashMap<Integer, Post>();
 	private static final int DOWN_GRADE = -1;
 	private static final int UP_GRADE = 1;
-
-	private static final String POSTS_PATH = "posts.json";
-
 	private static final String NO_AUTHORIZATION = "You don't have permession to delete this post";
-
 	private static final String INVALID_GRADE = String.format("Grade must be %d or %d!", DOWN_GRADE, UP_GRADE);
-
 	private static final String NOT_EXIST_POST_MEESAGE = "The post does not exist!";
-
 	private static final String ALREADY_RATED_POST_MESSAGE = "You have already rated this post!";
-
 	private static final String NO_POST_COMMENTS_MESSAGE = "This post no have comments.";
-
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
-
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
-
 	public static PostRepository postRepository;
 	private SectionRepository refToSectionRepo;
 
@@ -59,37 +51,47 @@ public class PostRepository {
 		return postRepository;
 	}
 
-	// public void editCommentOfCurrentPost(int postId, int commentId,String
-	// content) throws PostException {
-	// if (!this.posts.containsKey(postId)) {
-	// throw new PostException(NOT_EXIST_POST_MEESAGE);
-	// }
-	//
-	// if (Session.getInstance().getUser().getId() !=
-	// this.posts.get(postId).getUser().getId()) {
-	// throw new PostException(NO_AUTHORIZATION);
-	// }
-	//
-	// this.posts.get(postId).editComment(commentId);
-	// }
+	public void delete(int postId) throws PostException {
+		if (!POSTS.containsKey(postId)) {
+			throw new PostException(NOT_EXIST_POST_MEESAGE);
+		}
 
-	// public void delete(int postId) throws PostException {
-	// if (!this.posts.containsKey(postId)) {
-	// throw new PostException(NOT_EXIST_POST_MEESAGE);
-	// }
-	//
-	// if (Session.getInstance().getUser().getId() !=
-	// this.posts.get(postId).getUser().getId()) {
-	// throw new PostException(NO_AUTHORIZATION);
-	// }
-	//
-	// CommentRepository.getInstance().deleteAllCommentsCurrentPostById(postId);
-	//
-	// this.posts.get(postId).getUser().deletePostById(postId);
-	//
-	// this.posts.remove(postId);
-	// }
-
+		if (Session.getInstance().getUser().getId() != POSTS.get(postId).getUser().getId()) {
+			throw new PostException(NO_AUTHORIZATION);
+		}
+		
+		
+		try(PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(DELETE_POST_QUERY);){
+			ps.setInt(1, postId);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		// delete all comments from users
+		Set<Comment> allCommentsOfPost = POSTS.get(postId).getAllComments();
+		for (Comment c : allCommentsOfPost) {
+			User author = c.getUser();
+			author.removeComment(c);
+		}
+		
+		//delete comments from comment repository and of users
+		CommentRepository commentRepo = CommentRepository.getInstance();
+		for (Comment c : allCommentsOfPost) {
+			commentRepo.removeCommentById(c.getId());
+		}
+		
+		//delete post from each user who voted for him
+		Post post = POSTS.get(postId);
+		for (User user : UserRepository.users.values()) {
+			if (user.checkForRatedPostByPostId(postId)) {
+				user.removeRatedPost(post);
+			}
+		}
+		
+		this.POSTS.remove(postId);
+		System.out.println(String.format(MSG_SUCCESSFULY_DELETED_POST, postId));
+	}
+	
 	public Post addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
 		// Get section by name
 		Section section = this.refToSectionRepo.getSectionByName(sectionName);
@@ -151,6 +153,8 @@ public class PostRepository {
 		return post;
 	}
 
+	
+	
 	public void addGradeToPost(int postId, byte grade) throws PostException {
 		if (grade != DOWN_GRADE && grade != UP_GRADE) {
 			throw new PostException(INVALID_GRADE);
@@ -181,14 +185,6 @@ public class PostRepository {
 			e.printStackTrace();
 		}
 		System.out.println(MSG_SUCCESSFULY_GRADED);
-	}
-
-	public Post getPostById(int postId) {
-		if (!this.POSTS.containsKey(postId)) {
-			return null;
-		}
-
-		return this.POSTS.get(postId);
 	}
 
 	public void listPostsByTagName(String tagName) {
@@ -225,6 +221,14 @@ public class PostRepository {
 
 	}
 
+	public Post getPostById(int postId) {
+		if (!this.POSTS.containsKey(postId)) {
+			return null;
+		}
+
+		return this.POSTS.get(postId);
+	}
+
 	public void getProcess() {
 		for (Post post : POSTS.values()) {
 			// && Session.getInstance().getUser() != null
@@ -235,4 +239,6 @@ public class PostRepository {
 		}
 
 	}
+
+	
 }
