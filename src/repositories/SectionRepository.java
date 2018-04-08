@@ -10,7 +10,7 @@ import models.Section;
 
 
 public class SectionRepository {
-	public static final Map<Integer,Section> sections = new HashMap<>();
+	public static final Map<Integer,Section> SECTION = new HashMap<>();
 	
 	private static final String INVALID_SECTION = "Section not found";
 	
@@ -28,23 +28,23 @@ public class SectionRepository {
 	}
 	
 	public Section getSectionByName(String name) {
-		if (!sections.values().stream().anyMatch(s -> s.getName().equals(name))) {
+		if (!SECTION.values().stream().anyMatch(s -> s.getName().equals(name))) {
 			return null;
 		}
 		
-		return sections.values().stream().filter(s -> s.getName().equals(name)).findFirst().get();
+		return SECTION.values().stream().filter(s -> s.getName().equals(name)).findFirst().get();
 	}
 	
 	public Section getSectionById(int id) throws SectionException {
-		if (!sections.containsKey(id)) {
+		if (!SECTION.containsKey(id)) {
 			throw new SectionException(INVALID_SECTION);
 		}
 		
-		return sections.get(id);
+		return SECTION.get(id);
 	}
 	
 	public List<String> getAllSectionNames() {
-		return sections
+		return SECTION
 				.values()
 				.stream()
 				.map(s -> s.getName())

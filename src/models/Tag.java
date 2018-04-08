@@ -8,6 +8,15 @@ public class Tag {
 		
 	}
 
+	public Tag(int id,String name) {
+		this(name);
+		this.id = id;
+	}
+	
+	public Tag(String name) {
+		this.name = name;
+	}
+	
 	public int getId() {
 		return id;
 	}

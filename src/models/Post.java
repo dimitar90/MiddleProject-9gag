@@ -29,9 +29,7 @@ public class Post {
 	private int id;
 	private String internetUrl;
 	private String localUrl;
-	public void setId(int id) {
-		this.id = id;
-	}
+	
 
 	private LocalDateTime dateTime;
 	private User user;
@@ -48,11 +46,16 @@ public class Post {
 		this.ratings = new ArrayList<>();
 	}
 
+	public Post(int id,String description,String url,Section section,LocalDateTime dateTime) throws PostException {
+		this(description,url,section);
+		this.dateTime = dateTime;
+		this.id = id;
+	}//
+	
 	public Post(String description, String url, Section section) throws PostException {
 		this();
 		this.setDescription(description);
 		this.internetUrl = url;
-		this.dateTime = LocalDateTime.now();
 		this.section = section;
 		this.hasDownload = false;
 	}
@@ -201,6 +204,11 @@ public class Post {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public void setId(int id) {
+		this.id = id;
 	}
 	
 	@Override

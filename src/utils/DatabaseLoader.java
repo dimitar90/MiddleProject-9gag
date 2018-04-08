@@ -77,7 +77,7 @@ public class DatabaseLoader {
 				section.setId(id);
 				section.setName(name);
 
-				SectionRepository.sections.put(section.getId(), section);
+				SectionRepository.SECTION.put(section.getId(), section);
 				System.out.println("Load section: " + section.getName() + " id: " + section.getId());
 			}
 		}
@@ -273,7 +273,7 @@ public class DatabaseLoader {
 		}
 		
 		//load all posts for each sections
-		for (Section section : SectionRepository.sections.values()) {
+		for (Section section : SectionRepository.SECTION.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_POST_IDS_BY_SECTION_ID)) {
 				pr.setInt(1, section.getId());
 				

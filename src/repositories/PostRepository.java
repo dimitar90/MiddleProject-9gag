@@ -2,34 +2,34 @@ package repositories;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.sql.rowset.serial.SerialException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import connection.DatabaseConnection;
 import exceptions.PostException;
 import exceptions.SectionException;
-import exceptions.SerializeException;
 import models.Comment;
 import models.Post;
 import models.Section;
 import models.Tag;
 import models.User;
-import utils.Downloader;
-import utils.JsonSerializer;
 import utils.Session;
 
 public class PostRepository {
+	private static final String INSERT_POST_QUERY = "INSERT INTO posts (description , internet_url , section_id , author_id) VALUES (?,?,?,?)";
+	private static final String INSERT_POST_TAG_QUERY = "INSERT INTO post_tag WHERE post_id = ?";
 	public static final Map<Integer, Post> posts = new HashMap<Integer, Post>();
 
 	private static final int DOWN_GRADE = -1;
@@ -51,13 +51,12 @@ public class PostRepository {
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
 
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
-	
+
 	public static PostRepository postRepository;
-	
-	private JsonSerializer serializer;
+	private SectionRepository refToSectionRepo;
 
 	private PostRepository() {
-		this.serializer = new JsonSerializer();
+		this.refToSectionRepo = SectionRepository.getInstance();
 	}
 
 	public static PostRepository getInstance() {
@@ -81,59 +80,70 @@ public class PostRepository {
 	// this.posts.get(postId).editComment(commentId);
 	// }
 
-	public void delete(int postId) throws PostException {
-		if (!this.posts.containsKey(postId)) {
-			throw new PostException(NOT_EXIST_POST_MEESAGE);
-		}
-
-		if (Session.getInstance().getUser().getId() != this.posts.get(postId).getUser().getId()) {
-			throw new PostException(NO_AUTHORIZATION);
-		}
-
-		CommentRepository.getInstance().deleteAllCommentsCurrentPostById(postId);
-
-		this.posts.get(postId).getUser().deletePostById(postId);
-
-		this.posts.remove(postId);
-	}
+	// public void delete(int postId) throws PostException {
+	// if (!this.posts.containsKey(postId)) {
+	// throw new PostException(NOT_EXIST_POST_MEESAGE);
+	// }
+	//
+	// if (Session.getInstance().getUser().getId() !=
+	// this.posts.get(postId).getUser().getId()) {
+	// throw new PostException(NO_AUTHORIZATION);
+	// }
+	//
+	// CommentRepository.getInstance().deleteAllCommentsCurrentPostById(postId);
+	//
+	// this.posts.get(postId).getUser().deletePostById(postId);
+	//
+	// this.posts.remove(postId);
+	// }
 
 	public Post addPost(String description, String url, String sectionName, List<String> tags)
 			throws PostException, SectionException {
-		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
-		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
+
+		Section section = this.refToSectionRepo.getSectionByName(sectionName);
+		List<String> allSectionNames = this.refToSectionRepo.getAllSectionNames();
 
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}
-		// if (section == null) {
-		// section = SectionRepository.getInstance().addSection(sectionName);
-		// }
 
-		Post post = new Post(description, url, section);
+		PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_QUERY,
+				PreparedStatement.RETURN_GENERATED_KEYS);
 
-		// и тука се променя логиката вече не проверяваме само за 1 таг, а за всички
-		// подадени и ги сетваме на поста
+		int sectionId = section.getId();
+		int autorId = Session.getInstance().getUser().getId();
+		LocalDateTime dateTime = LocalDateTime.now();
+
+		ps.setString(1, description);
+		ps.setString(2, url);
+		ps.setInt(3, sectionId);
+		ps.setInt(4, autorId);
+		ps.executeUpdate();
+
+		ResultSet result = ps.getGeneratedKeys();
+		result.next();
+		int postId = result.getInt(1);
+
+		Post post = new Post(postId, description, url, section, dateTime);
+		ps.close();
+
+		ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_TAG_QUERY);
+		TagRepository tagRepo = TagRepository.getInstance();
+
 		for (String tagName : tags) {
-			Tag tag = TagRepository.getInstance().getTagByName(tagName);
-			if (tag == null) {
-				tag = TagRepository.getInstance().addTag(tagName);
-			}
-
-			post.addTagId(tag.getId());
+			tagRepo.addTag(tagName);
+			int tagId = tagRepo.getTagByName(tagName).getId();
+			ps.setInt(1, tagId);
 		}
 
-		User user = Session.getInstance().getUser();
-		post.setUser(user);
-		user.addPost(post.getId());
-		section.addPost(post.getId());
-		this.posts.put(post.getId(), post);
+		ps.close();
 
 		return post;
 	}
 
-	public void exportPost() throws SerializeException, SerialException {
-		this.serializer.serialize(this.posts, POSTS_PATH);
-	}
+	// public void exportPost() throws SerializeException, SerialException {
+	// this.serializer.serialize(this.posts, POSTS_PATH);
+	// }
 
 	public void deserialize() throws IOException {
 		File file = new File(POSTS_PATH);
@@ -291,13 +301,14 @@ public class PostRepository {
 		return sb.toString();
 	}
 
-	public  void getProcess() {
+	public void getProcess() {
 		for (Post post : posts.values()) {
-			// && Session.getInstance().getUser() != null &&Session.getInstance().getUser().getId() == post.getUser().getId()
+			// && Session.getInstance().getUser() != null
+			// &&Session.getInstance().getUser().getId() == post.getUser().getId()
 			if (!post.isDownload()) {
 				post.downloadImage();
 			}
 		}
-		
+
 	}
 }
