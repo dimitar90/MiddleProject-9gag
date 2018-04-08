@@ -99,17 +99,17 @@ public class PostRepository {
 
 	public Post addPost(String description, String url, String sectionName, List<String> tags)
 			throws PostException, SectionException {
-
+		//Get section by name
 		Section section = this.refToSectionRepo.getSectionByName(sectionName);
 		List<String> allSectionNames = this.refToSectionRepo.getAllSectionNames();
 
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}
-
+		// Open connection to insert post
 		PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_QUERY,
 				PreparedStatement.RETURN_GENERATED_KEYS);
-
+		
 		int sectionId = section.getId();
 		int autorId = Session.getInstance().getUser().getId();
 		LocalDateTime dateTime = LocalDateTime.now();
@@ -126,18 +126,20 @@ public class PostRepository {
 
 		Post post = new Post(postId, description, url, section, dateTime);
 		ps.close();
-
+		// Open connection to insert post id and tag id into mapping table post_tag
 		ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_TAG_QUERY);
 		TagRepository tagRepo = TagRepository.getInstance();
-
+		
 		for (String tagName : tags) {
 			tagRepo.addTag(tagName);
 			int tagId = tagRepo.getTagByName(tagName).getId();
 			ps.setInt(1, tagId);
+			Tag t = tagRepo.getTagById(tagId);
+			post.addTag(t);
 		}
 
 		ps.close();
-
+		this.posts.put(postId, post);
 		return post;
 	}
 
@@ -145,24 +147,24 @@ public class PostRepository {
 	// this.serializer.serialize(this.posts, POSTS_PATH);
 	// }
 
-	public void deserialize() throws IOException {
-		File file = new File(POSTS_PATH);
-
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		StringBuilder sb = new StringBuilder();
-
-		try (Scanner sc = new Scanner(file)) {
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				sb.append(line);
-			}
-		}
-
-		Map<Integer, Post> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Post>>() {
-		}.getType());
-
-		this.posts = map;
-	}
+//	public void deserialize() throws IOException {
+//		File file = new File(POSTS_PATH);
+//
+//		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//		StringBuilder sb = new StringBuilder();
+//
+//		try (Scanner sc = new Scanner(file)) {
+//			while (sc.hasNextLine()) {
+//				String line = sc.nextLine();
+//				sb.append(line);
+//			}
+//		}
+//
+//		Map<Integer, Post> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Post>>() {
+//		}.getType());
+//
+//		this.posts = map;
+//	}
 
 	public int getLastId() {
 		if (this.posts == null || this.posts.size() == 0) {
