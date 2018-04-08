@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -33,10 +34,8 @@ public class CommentRepository {
 	private static final String COMMENT_PATH = "comments.json";
 
 	private static CommentRepository commentRepository;
-	private JsonSerializer serializer;
 
 	private CommentRepository() {
-		this.serializer = new JsonSerializer();
 
 	}
 
@@ -116,26 +115,26 @@ public class CommentRepository {
 //			ps.println(jsonComments);
 //		}
 //	}
-	public void exportComment() throws SerializeException, SerialException {
-		this.serializer.serialize(comments, COMMENT_PATH);
-	}
-
-	public void deserialize() throws FileNotFoundException {
-		File file = new File(COMMENT_PATH);
-		Gson gson = new GsonBuilder().create();
-		StringBuilder sb = new StringBuilder();
-
-		try (Scanner sc = new Scanner(file)) {
-			while (sc.hasNextLine()) {
-				String line = sc.nextLine();
-				sb.append(line);
-			}
-		}
-		Map<Integer, Comment> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Comment>>() {
-		}.getType());
-
-		comments = map;
-	}
+//	public void exportComment() throws SerializeException, SerialException {
+//		this.serializer.serialize(comments, COMMENT_PATH);
+//	}
+//
+//	public void deserialize() throws FileNotFoundException {
+//		File file = new File(COMMENT_PATH);
+//		Gson gson = new GsonBuilder().create();
+//		StringBuilder sb = new StringBuilder();
+//
+//		try (Scanner sc = new Scanner(file)) {
+//			while (sc.hasNextLine()) {
+//				String line = sc.nextLine();
+//				sb.append(line);
+//			}
+//		}
+//		Map<Integer, Comment> map = gson.fromJson(sb.toString(), new TypeToken<Map<Integer, Comment>>() {
+//		}.getType());
+//
+//		comments = map;
+//	}
 
 //	public void importComment() {
 //		this.serializer.deserialize(this.comments, COMMENT_PATH);
@@ -153,8 +152,7 @@ public class CommentRepository {
 	}
 
 	public List<Comment> getCommentsByPostId(int postId) {
-		return comments.values().stream().filter(c -> c.getPost().getId() == postId)
-				.sorted((c1, c2) -> c2.getDate().compareTo(c1.getDate())).collect(Collectors.toList());
+		List<>
 	}
 
 	public void deleteAllCommentsCurrentPostById(int postId) {
@@ -176,5 +174,9 @@ public class CommentRepository {
 		}
 		
 		return comments.get(commentId);
+	}
+
+	public void removeCommentById(int id) {
+		this.comments.remove(id);
 	}
 }
