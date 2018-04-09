@@ -35,7 +35,6 @@ public class PostRepository {
 	private static final String INVALID_GRADE = String.format("Grade must be %d or %d!", DOWN_GRADE, UP_GRADE);
 	private static final String NOT_EXIST_POST_MEESAGE = "The post does not exist!";
 	private static final String ALREADY_RATED_POST_MESSAGE = "You have already rated this post!";
-	private static final String NO_POST_COMMENTS_MESSAGE = "This post no have comments.";
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
 	private static final String VIEW_POST_DATA = "Successfully create post: id:%d, description: %s, internetUrl: %s in section: %s, wrriten by %s";
@@ -90,7 +89,7 @@ public class PostRepository {
 		}
 		
 		String userName = post.getUser().getUsername(); 
-		this.POSTS.remove(postId);
+		POSTS.remove(postId);
 		return String.format(MSG_SUCCESSFULY_DELETED_POST, postId,userName);
 	}
 
@@ -105,7 +104,7 @@ public class PostRepository {
 		}
 
 		// Open connection to insert values into posts table
-		Post post = null;
+		Post post = new Post();
 		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_POST_QUERY,
 				PreparedStatement.RETURN_GENERATED_KEYS);) {
 
@@ -124,12 +123,17 @@ public class PostRepository {
 			ResultSet result = ps.getGeneratedKeys();
 			result.next();
 			int postId = result.getInt(1);
-
-			post = new Post(postId, description, url, section, dateTime);
+			
+			post.setId(postId);
+			post.setDescription(description);
+			post.setInternetUrl(url);
+			post.setSection(section);
+			post.setDateTime(dateTime);
+//			post = new Post(postId, description, url, section, dateTime);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
+		
 		TagRepository tagRepo = TagRepository.getInstance();
 		Set<Integer> tagIds = new HashSet<>();
 
@@ -148,13 +152,13 @@ public class PostRepository {
 			for (Integer id : tagIds) {
 				ps.setInt(1, post.getId());
 				ps.setInt(2, id);
+				ps.executeUpdate();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println(String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername()));
-		this.POSTS.put(post.getId(), post);
+		post.setUser(user);
+		POSTS.put(post.getId(), post);
 		return String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername());
 	}
 
@@ -191,17 +195,17 @@ public class PostRepository {
 	}
 
 	public void listPostsByTagName(String tagName) {
-		this.POSTS.values().stream().filter(p -> p.getTags().stream().anyMatch(t -> t.getName().equals(tagName)))
+		POSTS.values().stream().filter(p -> p.getTags().stream().anyMatch(t -> t.getName().equals(tagName)))
 				.sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime())).forEach(p -> System.out.println(p));
 	}
 
 	public void listAllPostsSortedByLatest() {
-		this.POSTS.values().stream().sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()))
+		POSTS.values().stream().sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()))
 				.forEach(p -> System.err.println(p));
 	}
 
 	public void listAllPostsSortedByRating() {
-		this.POSTS.values().stream().sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
+		POSTS.values().stream().sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
 				.forEach(p -> System.out.println(p));
 	}
 
@@ -225,11 +229,11 @@ public class PostRepository {
 	}
 
 	public Post getPostById(int postId) {
-		if (!this.POSTS.containsKey(postId)) {
+		if (!POSTS.containsKey(postId)) {
 			return null;
 		}
 
-		return this.POSTS.get(postId);
+		return POSTS.get(postId);
 	}
 
 	public void getProcess() {
@@ -250,7 +254,8 @@ public class PostRepository {
 		} else {
 			comparator = ((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()));
 		}
-		this.POSTS
+		
+		POSTS
 		.values()
 		.stream()
 		.sorted(comparator)

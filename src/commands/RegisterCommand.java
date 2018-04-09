@@ -48,8 +48,8 @@ public class RegisterCommand extends Command {
 			throw new UserException(INVALID_EMAIL);
 		}
 
-		UserRepository.getInstance().addUser(username, password, email);
-		return SUCCESS_MESSAGE;
+		String result = UserRepository.getInstance().addUser(username, password, email);
+		return result;
 	}
 
 }

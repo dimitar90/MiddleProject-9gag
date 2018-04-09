@@ -13,7 +13,6 @@ public class AddCommentCommand extends Command {
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String FAILED_LOGIN_MESSAGE = "Login first!";
 	private static final String MESSAGE_ABOUT_COMMENT = "Say something nice";
-	private static final String MSG_SUCCESSFULLY_CREATE_COMMENT = "Comment is updated";
 	// example
 	// add comment | commentContent postId
 
@@ -37,6 +36,6 @@ public class AddCommentCommand extends Command {
 
 		String result = CommentRepository.getInstance().addComent(content, postId);
 
-		return MSG_SUCCESSFULLY_CREATE_COMMENT;
+		return result;
 	}
 }

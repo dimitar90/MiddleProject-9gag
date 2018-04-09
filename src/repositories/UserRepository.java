@@ -39,16 +39,14 @@ public class UserRepository {
 		return userRepository;
 	}
 
-	public void addUser(String username, String password, String email) throws UserException, SQLException {
+	public String addUser(String username, String password, String email) throws UserException, SQLException {
 		if (this.isUserExistByName(username)) {
 			throw new UserException(ALREADY_EXIST);
 		}
 
 		try (PreparedStatement preparedStatement = DatabaseConnection.getConnection()
 				.prepareStatement(INSERT_USER_QUERY, new String[] { "id" })) {
-			// taka se setvat argumentite kum zaqvkata koqto izpra6tame kum bazata
-			// 1,2,3 sa vse edno indexite na elementite a v samata zaqvka se otbelqzvat s
-			// "?"
+		
 			password = Crypt.hashPassword(password);
 			preparedStatement.setString(1, username);
 			preparedStatement.setString(2, password);
@@ -57,21 +55,18 @@ public class UserRepository {
 
 			System.out.println(SUCCESSFULLY_REGISTRATION);
 			ResultSet rs = preparedStatement.getGeneratedKeys();
-
+			String result = null;
 			if (rs != null && rs.next()) {
-				// тука ид-то се взима по номер на колона понеже по име на колона нещо не работи
 				int id = rs.getInt(1);
 				User user = new User();
 				user.setId(id);
 				user.setUsername(username);
 				user.setEmail(email);
 				users.put(id, user);
-				// това съм го оставил да си гледаме за нас в конзолата дали всичко е ОК с
-				// регистрацията
-				// връщането с ид-то и т.н., а самия юзър го добавяме без паролата му в
-				// репоситорито
-				System.out.println(String.format(VIEW_DATA_USER, id, username, email));
+			
+				result = String.format(VIEW_DATA_USER, id, username, email);	
 			}
+			return result;
 		}
 	}
 	
@@ -84,16 +79,12 @@ public class UserRepository {
 	}
 
 	private boolean isUserExistByName(String username) throws SQLException {
-		// tuka pravim proverka dali user s takuv username sushtestvuva v bazata
 		try (PreparedStatement preparedStatement = DatabaseConnection.getConnection()
 				.prepareStatement(CHECK_EXIST_USER_QUERY)) {
 			preparedStatement.setString(1, username);
 
 			ResultSet resultSet = preparedStatement.executeQuery();
 
-			// vij zaqvkata gore priema argument username i ako ima takuv user shte vurne
-			// rezultat v result set, ako nqma
-			// nqma da vurne i tova se razbira s resultSet.next();
 			if (resultSet.next()) {
 				return true;
 			} else {
@@ -105,12 +96,9 @@ public class UserRepository {
 	public User login(String username, String password) throws SQLException, UserException {
 		User user = null;
 
-		// тука се прави заявка към базата да даде resultSet с реда от този username
 		try (PreparedStatement preparedStatement = DatabaseConnection.getConnection().prepareStatement(LOGIN_QUERY)) {
 			preparedStatement.setString(1, username);
 
-			// ако има такъв регистриран го връща, ако няма resultSet.next() дава false
-			// влизаме в if и хвърляме exception за невалидно име или парола
 			ResultSet resultSet = preparedStatement.executeQuery();
 			if (!resultSet.next()) {
 				throw new UserException(LoginCommand.INVALID_USER_ARGUMENTS);
@@ -118,12 +106,6 @@ public class UserRepository {
 				int id = resultSet.getInt("id");
 				String heshedPassword = resultSet.getString("password");
 
-				// тука вече ако има резултат правиме проверка дали паролата от потребителя
-				// в plain text(password) съвпада с хешираната парола, която сме извлекли от
-				// базата
-				// и ако няма съвпадение пак хвърляме exception за невалидно име или парола
-				// не се изписва дали само името или паролата е невалидна заради предпазване
-				// от хакване на профил с налучкване на парола
 				if (!Crypt.checkPassword(password, heshedPassword)) {
 					throw new UserException(LoginCommand.INVALID_USER_ARGUMENTS);
 				}

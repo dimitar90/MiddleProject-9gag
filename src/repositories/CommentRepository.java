@@ -24,7 +24,7 @@ public class CommentRepository {
 	private static final String NOT_HAVE_AUTHORIZATION_MESSAGE = "Not have authorization for delete this comment!";
 	private static final String UPDATE_COMMENT_QUERY = "UPDATE comments SET content = ? WHERE id = ?"; 
 	private static final String SUCCESSFULLY_EDITED_COMMENT_MESSAGE = "Successfully edited comment with id %d. Old content: %s, new content: %s";
-	private static final String INSERT_COMMENT_QUERY = "INSERT INTO comments (content,date_time,author_id,post_id) VALUES (?,?,?,?)";
+	private static final String INSERT_COMMENT_QUERY = "INSERT INTO comments (content, date_time, author_id, post_id) VALUES (?,?,?,?)";
 	private static final String VIEW_COMMENT_DATA = "Successfully add comment with id: %d, content: %s, wrriten on post with id: %d, wrriten by %s";
 	private static CommentRepository commentRepository;
 
@@ -46,14 +46,17 @@ public class CommentRepository {
 		if (post == null) {
 			throw new CommentException(MSG_NOT_SUCH_POST);
 		}
-		
+		Comment comment = new Comment();
 		User user = Session.getInstance().getUser();
 		
 		LocalDateTime curDateTime = LocalDateTime.now();
 		Timestamp curTimestamp = Timestamp.valueOf(curDateTime);
 		int authorId = user.getId();
-		int commentId = 0;
-
+		comment.setDateTime(curDateTime);
+		comment.setContent(content);
+		comment.setUser(user);
+		comment.setPost(post);
+		
 		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_COMMENT_QUERY,
 				PreparedStatement.RETURN_GENERATED_KEYS);) {
 			ps.setString(1, content);
@@ -64,16 +67,16 @@ public class CommentRepository {
 
 			ResultSet result = ps.getGeneratedKeys();
 			result.next();
-			commentId = result.getInt(1);
+			comment.setId(result.getInt(1));
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		Comment comment = new Comment(commentId, content, user, post, curDateTime);
+//		Comment comment = new Comment(commentId, content, user, post, curDateTime);
 
 		post.addComment(comment);
 		user.addComment(comment);
-		this.COMMENTS.put(commentId, comment);
+		COMMENTS.put(comment.getId(), comment);
 		
 		return String.format(VIEW_COMMENT_DATA, comment.getId(), content, post.getId(), user.getUsername());
 	}
@@ -99,7 +102,7 @@ public class CommentRepository {
 		}
 		int postId = comment.getPostId();
 		String oldContent = comment.getContent();
-		this.COMMENTS
+		COMMENTS
 		.values()
 		.stream()
 		.filter(v -> v.getPostId() == postId)
@@ -110,7 +113,7 @@ public class CommentRepository {
 	
 
 	private boolean isValidPost(int postId) {
-		return this.COMMENTS
+		return COMMENTS
 				.values()
 				.stream()
 				.filter(v -> v.getPostId() == postId)
@@ -166,6 +169,6 @@ public class CommentRepository {
 	}
 
 	public void removeCommentById(int id) {
-		this.COMMENTS.remove(id);
+		COMMENTS.remove(id);
 	}
 }

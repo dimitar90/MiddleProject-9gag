@@ -24,8 +24,7 @@ public class ShowRatingPostsCommand extends Command {
 	@Override
 	public String execute()
 			throws UserException, IOException, CommentException, SerialException, PostException {
-		// тука няма нужда от проверка за логнат юзър понеже и гостите могат да
-		// разглеждат
+		
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {
 			throw new PostException(Command.INVALID_DATA);
 		}
