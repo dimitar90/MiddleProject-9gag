@@ -22,7 +22,7 @@ import models.User;
 import utils.Session;
 
 public class PostRepository {
-	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted";
+	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted from %d";
 	private static final String DELETE_POST_QUERY = "DELETE FROM posts WHERE id = ?";
 	private static final String MSG_SUCCESSFULY_GRADED = "Successfuly graded post";
 	private static final String INSERT_POST_RATING_USER_QUERY = "INSERT INTO rating_post_user (post_id, user_id, grade) VALUES(?, ?, ?)";
@@ -38,6 +38,7 @@ public class PostRepository {
 	private static final String NO_POST_COMMENTS_MESSAGE = "This post no have comments.";
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
+	private static final String VIEW_POST_DATA = "Successfully create post: id:%d, description: %s, internetUrl: %s in section: %s, wrriten by %s";
 	public static PostRepository postRepository;
 	private SectionRepository refToSectionRepo;
 
@@ -52,7 +53,7 @@ public class PostRepository {
 		return postRepository;
 	}
 
-	public void delete(int postId) throws PostException {
+	public String delete(int postId) throws PostException {
 		if (!POSTS.containsKey(postId)) {
 			throw new PostException(NOT_EXIST_POST_MEESAGE);
 		}
@@ -87,14 +88,16 @@ public class PostRepository {
 				user.removeRatedPost(post);
 			}
 		}
-
+		
+		String userName = post.getUser().getUsername(); 
 		this.POSTS.remove(postId);
-		System.out.println(String.format(MSG_SUCCESSFULY_DELETED_POST, postId));
+		return String.format(MSG_SUCCESSFULY_DELETED_POST, postId,userName);
 	}
 
-	public Post addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
+	public String addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
 		// Get section by name
 		Section section = this.refToSectionRepo.getSectionByName(sectionName);
+		User user = Session.getInstance().getUser();
 		List<String> allSectionNames = this.refToSectionRepo.getAllSectionNames();
 
 		if (section == null) {
@@ -149,8 +152,10 @@ public class PostRepository {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println(String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername()));
 		this.POSTS.put(post.getId(), post);
-		return post;
+		return String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername());
 	}
 
 	public void addGradeToPost(int postId, int grade) throws PostException {
