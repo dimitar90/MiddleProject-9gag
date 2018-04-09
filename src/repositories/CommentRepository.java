@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,13 +18,14 @@ import utils.Session;
 
 public class CommentRepository {
 	public static final Map<Integer, Comment> COMMENTS = new HashMap<>();
-
+	private static final String NOT_HAVE_AUTHORIZATION_EDIT_MESSAGE = "Not have authorization for edit this comment!";
 	private static final String MSG_NOT_SUCH_POST = "This post does not exist!";
 	private static final String NOT_EXIST_COMMENT_MESSAGE = "This comment does not exist!";
 	private static final String NOT_HAVE_AUTHORIZATION_MESSAGE = "Not have authorization for delete this comment!";
 	private static final String UPDATE_COMMENT_QUERY = "UPDATE comments SET content = ? WHERE id = ?"; 
-	private static final String INSERT_COMMENT_QUERY = "INSERTE INTO comments (content,date_time,author_id,post_id) VALUES (?,?,?,?)";
-
+	private static final String SUCCESSFULLY_EDITED_COMMENT_MESSAGE = "Successfully edited comment with id %d. Old content: %s, new content: %s";
+	private static final String INSERT_COMMENT_QUERY = "INSERT INTO comments (content,date_time,author_id,post_id) VALUES (?,?,?,?)";
+	private static final String VIEW_COMMENT_DATA = "Successfully add comment with id: %d, content: %s, wrriten on post with id: %d, wrriten by %s";
 	private static CommentRepository commentRepository;
 
 	private CommentRepository() {
@@ -40,7 +40,7 @@ public class CommentRepository {
 		return commentRepository;
 	}
 
-	public Comment addComent(String content, int postId) throws CommentException {
+	public String addComent(String content, int postId) throws CommentException {
 		Post post = PostRepository.getInstance().getPostById(postId);
 		// If there is such a post
 		if (post == null) {
@@ -64,7 +64,7 @@ public class CommentRepository {
 
 			ResultSet result = ps.getGeneratedKeys();
 			result.next();
-			commentId = result.getInt("id");
+			commentId = result.getInt(1);
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -74,14 +74,16 @@ public class CommentRepository {
 		post.addComment(comment);
 		user.addComment(comment);
 		this.COMMENTS.put(commentId, comment);
-		return comment;
+		
+		return String.format(VIEW_COMMENT_DATA, comment.getId(), content, post.getId(), user.getUsername());
 	}
 
-	public void editComment(int postId, int commentId, String newContent)
+	public String editComment(int commentId, String newContent)
 			throws CommentException, PostException {
-		
-		if (!isValidPost(postId)) {
-			throw new PostException(MSG_NOT_SUCH_POST);
+		Comment comment = COMMENTS.get(commentId);
+		User user = Session.getInstance().getUser();
+		if (user.getId() != comment.getUser().getId()) {
+			throw new CommentException(NOT_HAVE_AUTHORIZATION_EDIT_MESSAGE);
 		}
 		
 		isValidComment(commentId);
@@ -91,15 +93,19 @@ public class CommentRepository {
 			ps.setString(1, newContent);
 			ps.setInt(2, commentId);
 			ps.executeUpdate();
+			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+		int postId = comment.getPostId();
+		String oldContent = comment.getContent();
 		this.COMMENTS
 		.values()
 		.stream()
 		.filter(v -> v.getPostId() == postId)
 		.forEach(v -> v.setNewContent(newContent));
+		
+		return String.format(SUCCESSFULLY_EDITED_COMMENT_MESSAGE, commentId, oldContent, newContent);
 	}
 	
 
