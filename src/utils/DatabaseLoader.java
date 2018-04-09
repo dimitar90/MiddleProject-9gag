@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import connection.DatabaseConnection;
 import exceptions.SectionException;
@@ -125,12 +123,12 @@ public class DatabaseLoader {
 				post.setDateTime(dateTime);
 				post.setUser(author);
 				post.setSection(section);
-				PostRepository.posts.put(postId, post);
+				PostRepository.POSTS.put(postId, post);
 			}
 		}
 		
 		// load all tags of each post
-				for (Post post : PostRepository.posts.values()) {
+				for (Post post : PostRepository.POSTS.values()) {
 					try (PreparedStatement pr = conn.prepareStatement(GET_ALL_TAGS_BY_POST_ID_QUERY)) {
 						pr.setInt(1, post.getId());
 						ResultSet rs = pr.executeQuery();
@@ -159,7 +157,7 @@ public class DatabaseLoader {
 				int postId = rs.getInt("post_id");
 				int rating = rs.getInt("rating");
 				
-				PostRepository.posts.get(postId).addRating(rating);
+				PostRepository.POSTS.get(postId).addRating(rating);
 			}
 		} catch (Exception e) {
 			e.getMessage();
@@ -185,12 +183,12 @@ public class DatabaseLoader {
 				comment.setPost(post);
 				comment.setUser(author);
 
-				CommentRepository.comments.put(commentId, comment);
+				CommentRepository.COMMENTS.put(commentId, comment);
 			}
 		}
 
 		// load all comments of each post
-		for (Post post : PostRepository.posts.values()) {
+		for (Post post : PostRepository.POSTS.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_ALL_COMENT_IDS_BY_POST_ID_QUERY)) {
 				pr.setInt(1, post.getId());
 				ResultSet rs = pr.executeQuery();

@@ -1,7 +1,5 @@
 package commands;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 import exceptions.CommentException;
@@ -11,13 +9,14 @@ import repositories.CommentRepository;
 import utils.Checker;
 import utils.Session;
 
-public class AddCommentCommand extends Command{
+public class AddCommentCommand extends Command {
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String FAILED_LOGIN_MESSAGE = "Login first!";
 	private static final String MESSAGE_ABOUT_COMMENT = "Say something nice";
-	//example
-	//add comment | commentContent postId 
-	
+	private static final String MSG_SUCCESSFULLY_CREATE_COMMENT = "Comment is updated";
+	// example
+	// add comment | commentContent postId
+
 	public AddCommentCommand(List<String> data) {
 		super(data);
 	}
@@ -27,17 +26,17 @@ public class AddCommentCommand extends Command{
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {
 			throw new CommentException(Command.INVALID_DATA);
 		}
-		
+
 		if (Session.getInstance().getUser() == null) {
 			throw new UserException(FAILED_LOGIN_MESSAGE);
-		} 
-		
+		}
+
 		System.out.println(MESSAGE_ABOUT_COMMENT);
 		String content = this.getData().get(0);
 		int postId = Integer.parseInt(this.getData().get(1));
-		
-		String result = CommentRepository.getInstance().add(content, postId);
-		
-		return result;
+
+		String result = CommentRepository.getInstance().addComent(content, postId);
+
+		return MSG_SUCCESSFULLY_CREATE_COMMENT;
 	}
 }

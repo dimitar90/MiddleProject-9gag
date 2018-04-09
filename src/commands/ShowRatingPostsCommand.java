@@ -7,7 +7,6 @@ import javax.sql.rowset.serial.SerialException;
 
 import exceptions.CommentException;
 import exceptions.PostException;
-import exceptions.SerializeException;
 import exceptions.UserException;
 import repositories.PostRepository;
 import utils.Checker;
@@ -24,7 +23,7 @@ public class ShowRatingPostsCommand extends Command {
 
 	@Override
 	public String execute()
-			throws UserException, IOException, CommentException, SerialException, PostException, SerializeException {
+			throws UserException, IOException, CommentException, SerialException, PostException {
 		// тука няма нужда от проверка за логнат юзър понеже и гостите могат да
 		// разглеждат
 		if (!Checker.isValidDateLenght(this.getData(), ARGUMENTS_LENGTH)) {

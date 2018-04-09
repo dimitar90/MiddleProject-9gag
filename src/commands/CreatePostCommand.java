@@ -1,4 +1,5 @@
-package commands;
+ 
+ package commands;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,7 +10,7 @@ import repositories.PostRepository;
 import utils.Session;
 
 public class CreatePostCommand extends Command{
-	private static final String SUCCESS_MESSAGE = "Create post successfully";
+//	private static final String SUCCESS_MESSAGE = "Create post successfully";
 	private static final String MEESAGE_NO_USER = "If u want to create a post u have to be logged";
 	private static final String MSG_TO_FOR_FIRST_COMMENT = "Be the first to comment!";
 	public CreatePostCommand(List<String> data) {
@@ -29,13 +30,13 @@ public class CreatePostCommand extends Command{
 		String section = this.getData().get(2);
 		List<String> tagNames = this.getData().stream().skip(3).collect(Collectors.toList());
 		
-		Post post = PostRepository.getInstance().addPost(description, url, section ,tagNames);
+		String result = PostRepository.getInstance().addPost(description, url, section ,tagNames);
 		
-		if (!post.anyComments()) {
-			System.out.println(MSG_TO_FOR_FIRST_COMMENT);
-		}
+//		if (!post.anyComments()) {
+//			System.out.println(MSG_TO_FOR_FIRST_COMMENT);
+//		}
 		
-		return SUCCESS_MESSAGE;
+		return result;
 	}
 
 }

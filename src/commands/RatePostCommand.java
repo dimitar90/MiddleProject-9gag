@@ -7,7 +7,6 @@ import javax.sql.rowset.serial.SerialException;
 
 import exceptions.CommentException;
 import exceptions.PostException;
-import exceptions.SerializeException;
 import exceptions.UserException;
 import repositories.PostRepository;
 import utils.Checker;
@@ -16,6 +15,7 @@ import utils.Session;
 public class RatePostCommand extends Command {
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String MEESAGE_NO_USER = "If u want to rated a post u have to be logged";
+	private static final String MSG_RATED_POST = "Post was grated";
 	
 	// rate post | postId postGrade(rate must be -1 or 1)
 	public RatePostCommand(List<String> data) {
@@ -24,7 +24,7 @@ public class RatePostCommand extends Command {
 
 	@Override
 	public String execute()
-			throws UserException, IOException, CommentException, SerialException, PostException, SerializeException {
+			throws UserException, IOException, CommentException, SerialException, PostException  {
 		if (Session.getInstance().getUser() == null) {
 			throw new PostException(MEESAGE_NO_USER);
 		}
@@ -36,9 +36,9 @@ public class RatePostCommand extends Command {
 		int postId = Integer.parseInt(this.getData().get(0));
 		int grade = Byte.parseByte(this.getData().get(1));
 		
-		String result = PostRepository.getInstance().addGradeToPost(postId, grade);
+		PostRepository.getInstance().addGradeToPost(postId, grade);
 		
-		return result;
+		return MSG_RATED_POST;
 	}
 
 }

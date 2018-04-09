@@ -18,11 +18,17 @@ public class Comment {
 	}
 
 	// TODO validation
-	public Comment(String content) {
-		this.dateTime = LocalDateTime.now();
+	public Comment(String content,User user,Post post,LocalDateTime dateTime) {
+		this.dateTime = dateTime;
 		this.setContent(content);
 	}
 
+	public Comment(int id,String content,User user,Post post,LocalDateTime dateTime) {
+		this(content,user,post, dateTime);
+		this.id = id;
+	}
+
+	
 	public int getId() {
 		return id;
 	}
@@ -63,6 +69,11 @@ public class Comment {
 		return this.post.getId();
 	}
 
+
+	public void setNewContent(String content) {
+			this.content = content;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -72,4 +83,5 @@ public class Comment {
 	
 		return sb.toString();
 	}
+
 }

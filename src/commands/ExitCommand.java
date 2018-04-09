@@ -5,14 +5,7 @@ import java.util.List;
 
 import javax.sql.rowset.serial.SerialException;
 
-import exceptions.SerializeException;
 import exceptions.UserException;
-import models.Section;
-import repositories.CommentRepository;
-import repositories.PostRepository;
-import repositories.SectionRepository;
-import repositories.TagRepository;
-import repositories.UserRepository;
 
 public class ExitCommand extends Command {
 
@@ -21,7 +14,7 @@ public class ExitCommand extends Command {
 	}
 
 	@Override
-	public String execute() throws UserException, IOException, SerialException, SerializeException {
+	public String execute() throws UserException, IOException, SerialException  {
 		System.exit(0);
 		return "Exit successfully.";
 	}

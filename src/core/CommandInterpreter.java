@@ -1,20 +1,14 @@
 package core;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.sql.rowset.serial.SerialException;
 
 import commands.Executable;
-import exceptions.CommentException;
 import exceptions.InvalidCommandException;
-import exceptions.PostException;
-import exceptions.SerializeException;
-import exceptions.UserException;
 
 public class CommandInterpreter implements IInterpreter {
 	private static final String PREFFIX = "commands.";

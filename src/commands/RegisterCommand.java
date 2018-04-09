@@ -4,7 +4,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import exceptions.UserException;
-import models.User;
 import repositories.UserRepository;
 import utils.Checker;
 import utils.Session;
