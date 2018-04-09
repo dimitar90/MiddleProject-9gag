@@ -159,6 +159,7 @@ public class PostRepository {
 		}
 		post.setUser(user);
 		POSTS.put(post.getId(), post);
+		
 		return String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername());
 	}
 
@@ -238,13 +239,10 @@ public class PostRepository {
 
 	public void getProcess() {
 		for (Post post : POSTS.values()) {
-			// && Session.getInstance().getUser() != null
-			// &&Session.getInstance().getUser().getId() == post.getUser().getId()
-			if (!post.isDownload()) {
-				post.downloadImage();
+			if (!post.isDownload() && post.getLocalUrl() != Post.INVALID_URL) {
+				post.downloadImage(post);
 			}
 		}
-
 	}
 
 	public void listAllPostsSortedByDate(boolean inAscending) {
@@ -261,7 +259,4 @@ public class PostRepository {
 		.sorted(comparator)
 		.forEach(p -> System.out.println(p));
 	}
-
-
-
 }

@@ -19,8 +19,8 @@ public class Application {
 			e.printStackTrace();
 		}
 		
-		//downloader.setDaemon(true);
-		//downloader.start();
+		downloader.setDaemon(true);
+		downloader.start();
 
 		Runnable engine = new Engine();
 		engine.run();

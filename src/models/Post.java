@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,16 +17,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import connection.DatabaseConnection;
 import exceptions.PostException;
 
 public class Post {
-	private static final String FINAL_MESSAGE = "Download completed. . .";
+	public static final String INVALID_URL = "Invalid url"; 
+	private static final String FINAL_SUCCESS_DOWNLOAD_MESSAGE = "Download completed. . .";
 	private static final int MULTIPLYER = 100;
 	private static final double INITIAL_PERCENT_OF_DOWNLOAD = 0.00;
 	private static final int KB = 1024;
 	private static final String MESSAGE_INVALID_DESCRIPTION = "Give a funny, creative and descriptive title to the post would give the post a boost!";
 	private static final String MESSAGE_INVALID_NAME = "Invalid parameters for name";
 	private static final String PATH_RES = "resources" + File.separator;
+	private static final String UPDATE_POST_LOCAL_URL_QUERY = "UPDATE posts SET local_url = ?, has_download = ? WHERE id = ?";
+	private static final String FAILED_DOWNLOAD_MESSAGE = "Download failed...";
 
 	private int id;
 	private String internetUrl;
@@ -164,7 +171,7 @@ public class Post {
 		return Collections.unmodifiableSet(this.comments);
 	}
 
-	public void downloadImage() {
+	public void downloadImage(Post post) {
 		String dirName = this.user.getUsername();
 		File file = new File(PATH_RES + dirName);
 
@@ -172,7 +179,7 @@ public class Post {
 			if (!file.exists()) {
 				file.mkdirs();
 			}
-
+			
 			URLConnection url = new URL(this.internetUrl).openConnection();
 			url.addRequestProperty("User-Agent", 
 					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)");
@@ -196,13 +203,26 @@ public class Post {
 				String percent = String.format("%.2f", percentDownloaded);
 				System.out.println("Downloaded " + percent + "% of a file.");
 			}
+			
 			bout.close();
 			in.close();
-			this.setFlag(true);
-			this.localUrl = localPath;
-			System.out.println(FINAL_MESSAGE);
-		} catch (IOException e) {
-			e.printStackTrace();
+			post.setFlag(true);
+			post.setLocalUrl(localPath);
+			
+		} catch (Exception e) {
+			System.out.println("Invalid url for post with id " + post.getId());
+			post.setLocalUrl(INVALID_URL);
+		} finally {
+			try (PreparedStatement pr = DatabaseConnection.getConnection().prepareStatement(UPDATE_POST_LOCAL_URL_QUERY)){
+				pr.setString(1, post.getLocalUrl());
+				pr.setBoolean(2, true);
+				pr.setInt(3, post.getId());
+				System.out.println(post.getId());
+				pr.executeUpdate();
+				System.out.println(FINAL_SUCCESS_DOWNLOAD_MESSAGE);
+			} catch (SQLException e) {
+				System.out.println(FAILED_DOWNLOAD_MESSAGE);
+			}
 		}
 	}
 	
