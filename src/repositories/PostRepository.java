@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,9 +60,8 @@ public class PostRepository {
 		if (Session.getInstance().getUser().getId() != POSTS.get(postId).getUser().getId()) {
 			throw new PostException(NO_AUTHORIZATION);
 		}
-		
-		
-		try(PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(DELETE_POST_QUERY);){
+
+		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(DELETE_POST_QUERY);) {
 			ps.setInt(1, postId);
 			ps.executeUpdate();
 		} catch (SQLException e) {
@@ -73,25 +73,25 @@ public class PostRepository {
 			User author = c.getUser();
 			author.removeComment(c);
 		}
-		
-		//delete comments from comment repository and of users
+
+		// delete comments from comment repository and of users
 		CommentRepository commentRepo = CommentRepository.getInstance();
 		for (Comment c : allCommentsOfPost) {
 			commentRepo.removeCommentById(c.getId());
 		}
-		
-		//delete post from each user who voted for him
+
+		// delete post from each user who voted for him
 		Post post = POSTS.get(postId);
 		for (User user : UserRepository.users.values()) {
 			if (user.checkForRatedPostByPostId(postId)) {
 				user.removeRatedPost(post);
 			}
 		}
-		
+
 		this.POSTS.remove(postId);
 		System.out.println(String.format(MSG_SUCCESSFULY_DELETED_POST, postId));
 	}
-	
+
 	public Post addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
 		// Get section by name
 		Section section = this.refToSectionRepo.getSectionByName(sectionName);
@@ -153,9 +153,7 @@ public class PostRepository {
 		return post;
 	}
 
-	
-	
-	public void addGradeToPost(int postId, byte grade) throws PostException {
+	public void addGradeToPost(int postId, int grade) throws PostException {
 		if (grade != DOWN_GRADE && grade != UP_GRADE) {
 			throw new PostException(INVALID_GRADE);
 		}
@@ -240,5 +238,18 @@ public class PostRepository {
 
 	}
 
-	
+	public void listAllPostsSortedByDate(boolean inAscending) {
+		Comparator<Post> comparator = null;
+		if (inAscending) {
+			comparator = ((p1, p2) -> p1.getDateTime().compareTo(p2.getDateTime()));
+		} else {
+			comparator = ((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()));
+		}
+		this.POSTS
+		.values()
+		.stream()
+		.sorted(comparator)
+		.forEach(p -> System.out.println(p));
+	}
+
 }
