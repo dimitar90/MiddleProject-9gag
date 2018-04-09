@@ -2,8 +2,10 @@ package repositories;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,13 +18,12 @@ import models.User;
 import utils.Session;
 
 public class CommentRepository {
-	public static final Map<Integer, Comment> comments = new HashMap<>();
+	public static final Map<Integer, Comment> COMMENTS = new HashMap<>();
 
-	private static final String MSG_INO_SUCH_POST = "This post does not exist!";
+	private static final String MSG_NOT_SUCH_POST = "This post does not exist!";
 	private static final String NOT_EXIST_COMMENT_MESSAGE = "This comment does not exist!";
 	private static final String NOT_HAVE_AUTHORIZATION_MESSAGE = "Not have authorization for delete this comment!";
-	private static final String COMMENT_PATH = "comments.json";
-
+	private static final String UPDATE_COMMENT_QUERY = "UPDATE comments SET content = ? WHERE id = ?"; 
 	private static final String INSERT_COMMENT_QUERY = "INSERTE INTO comments (content,date_time,author_id,post_id) VALUES (?,?,?,?)";
 
 	private static CommentRepository commentRepository;
@@ -43,7 +44,7 @@ public class CommentRepository {
 		Post post = PostRepository.getInstance().getPostById(postId);
 		// If there is such a post
 		if (post == null) {
-			throw new CommentException(MSG_INO_SUCH_POST);
+			throw new CommentException(MSG_NOT_SUCH_POST);
 		}
 		
 		User user = Session.getInstance().getUser();
@@ -51,7 +52,7 @@ public class CommentRepository {
 		LocalDateTime curDateTime = LocalDateTime.now();
 		Timestamp curTimestamp = Timestamp.valueOf(curDateTime);
 		int authorId = user.getId();
-		int commentId;
+		int commentId = 0;
 
 		try (PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(INSERT_COMMENT_QUERY,
 				PreparedStatement.RETURN_GENERATED_KEYS);) {
@@ -64,38 +65,51 @@ public class CommentRepository {
 			ResultSet result = ps.getGeneratedKeys();
 			result.next();
 			commentId = result.getInt("id");
+		}catch (SQLException e) {
+			e.printStackTrace();
 		}
 
 		Comment comment = new Comment(commentId, content, user, post, curDateTime);
 
 		post.addComment(comment);
 		user.addComment(comment);
-		this.comments.put(commentId, comment);
+		this.COMMENTS.put(commentId, comment);
 		return comment;
 	}
 
-	public void editCommentOfCurrentPost(int postId, int commentId, String content)
+	public void editComment(int postId, int commentId, String newContent)
 			throws CommentException, PostException {
-
-		if (!isValidPost(postId)) {// проверяваме ID то на поста с Optional в метода, бомба е !
-			throw new PostException(MSG_INO_SUCH_POST);
+		
+		if (!isValidPost(postId)) {
+			throw new PostException(MSG_NOT_SUCH_POST);
 		}
-
+		
 		isValidComment(commentId);
-
 		isAuthorizated(commentId);
 
-		// this.comments
-		// .entrySet()
-		// .stream()
-		// .filter(k -> k.getKey() == commentId)
-		// .filter(v -> v.getValue().getPostId() == postId)
-		// .forEach(v -> v.setContent(content));
-		comments.values().stream().filter(v -> v.getPostId() == postId).forEach(v -> v.setNewContent(content));
+		try(PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(UPDATE_COMMENT_QUERY)){
+			ps.setString(1, newContent);
+			ps.setInt(2, commentId);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		this.COMMENTS
+		.values()
+		.stream()
+		.filter(v -> v.getPostId() == postId)
+		.forEach(v -> v.setNewContent(newContent));
 	}
+	
 
 	private boolean isValidPost(int postId) {
-		return this.comments.values().stream().filter(v -> v.getPostId() == postId).findFirst().isPresent();
+		return this.COMMENTS
+				.values()
+				.stream()
+				.filter(v -> v.getPostId() == postId)
+				.findFirst()
+				.isPresent();
 	}
 
 	public void delete(int commentId) throws CommentException {
@@ -104,52 +118,18 @@ public class CommentRepository {
 
 		isAuthorizated(commentId);
 
-		comments.remove(commentId);
+		COMMENTS.remove(commentId);
 	}
 
-	// public void serialize() throws IOException {
-	// File file = new File(COMMENT_PATH);
-	// Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	// String jsonComments = gson.toJson(this.comments);
-	//
-	// try (PrintStream ps = new PrintStream(file)) {
-	// file.createNewFile();
-	// ps.println(jsonComments);
-	// }
-	// }
-	// public void exportComment() throws SerializeException, SerialException {
-	// this.serializer.serialize(comments, COMMENT_PATH);
-	// }
-	//
-	// public void deserialize() throws FileNotFoundException {
-	// File file = new File(COMMENT_PATH);
-	// Gson gson = new GsonBuilder().create();
-	// StringBuilder sb = new StringBuilder();
-	//
-	// try (Scanner sc = new Scanner(file)) {
-	// while (sc.hasNextLine()) {
-	// String line = sc.nextLine();
-	// sb.append(line);
-	// }
-	// }
-	// Map<Integer, Comment> map = gson.fromJson(sb.toString(), new
-	// TypeToken<Map<Integer, Comment>>() {
-	// }.getType());
-	//
-	// comments = map;
-	// }
-
-	// public void importComment() {
-	// this.serializer.deserialize(this.comments, COMMENT_PATH);
-	// }
+	
 	private void isValidComment(int arg) throws CommentException {
-		if (!comments.containsKey(arg)) {
+		if (!COMMENTS.containsKey(arg)) {
 			throw new CommentException(NOT_EXIST_COMMENT_MESSAGE);
 		}
 	}
 
 	private void isAuthorizated(int arg) throws CommentException {
-		if (Session.getInstance().getUser().getId() != comments.get(arg).getUser().getId()) {
+		if (Session.getInstance().getUser().getId() != COMMENTS.get(arg).getUser().getId()) {
 			throw new CommentException(NOT_HAVE_AUTHORIZATION_MESSAGE);
 		}
 	}
@@ -159,27 +139,27 @@ public class CommentRepository {
 	// }
 
 	public void deleteAllCommentsCurrentPostById(int postId) {
-		comments.values().removeIf(v -> v.getPostId() == postId);
+		COMMENTS.values().removeIf(v -> v.getPostId() == postId);
 	}
 
 	public int getLastId() {
-		if (comments == null || comments.size() == 0) {
+		if (COMMENTS == null || COMMENTS.size() == 0) {
 			return 0;
 		}
 
-		return comments.values().stream().sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).findFirst().get()
+		return COMMENTS.values().stream().sorted((c1, c2) -> Integer.compare(c2.getId(), c1.getId())).findFirst().get()
 				.getId();
 	}
 
 	public Comment getCommentById(Integer commentId) {
-		if (!comments.containsKey(commentId)) {
+		if (!COMMENTS.containsKey(commentId)) {
 			return null;
 		}
 
-		return comments.get(commentId);
+		return COMMENTS.get(commentId);
 	}
 
 	public void removeCommentById(int id) {
-		this.comments.remove(id);
+		this.COMMENTS.remove(id);
 	}
 }
