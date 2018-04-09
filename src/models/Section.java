@@ -13,6 +13,12 @@ public class Section {
 		this.post = new HashSet<>();
 	}
 	
+	public Section(int id,String name) {
+		this();
+		this.setId(id);
+		this.setName(name);
+	}
+	
 	public void addPost(Post post) {
 		this.post.add(post);
 	}

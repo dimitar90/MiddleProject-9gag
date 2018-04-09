@@ -2,7 +2,14 @@ package models;
 
 import java.time.LocalDateTime;
 
+import exceptions.CommentException;
+
 public class Comment {
+	private static final String MSG_INVALID_USER = "Invalid parameter of user";
+	private static final String MSG_INVALID_POST = "Invalid object post";
+	private static final String MSG_INVALID_CONTENT = "Invalid parameters for content";
+	private static final String MSG_INVALID_DATE_TIME = "Invalid parameter of date time";
+	private static final String MSG_INVALID_ID = "Id must be positive!";
 	private int id;
 	private String content;
 	private LocalDateTime dateTime;
@@ -10,70 +17,95 @@ public class Comment {
 	private User user;
 
 	public Comment() {
-		
+
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	// TODO validation
-	public Comment(String content,User user,Post post,LocalDateTime dateTime) {
-		this.dateTime = dateTime;
+	public Comment(String content, User user, Post post, LocalDateTime dateTime) throws CommentException {
+		this.setPost(post);
+		this.setUser(user);
+		this.setDateTime(dateTime);
 		this.setContent(content);
 	}
 
-	public Comment(int id,String content,User user,Post post,LocalDateTime dateTime) {
-		this(content,user,post, dateTime);
-		this.id = id;
-	}
-
-	
-	public int getId() {
-		return id;
+	public Comment(int id, String content, User user, Post post, LocalDateTime dateTime) throws CommentException {
+		this(content, user, post, dateTime);
+		this.setId(id);
 	}
 
 	public String getContent() {
 		return content;
 	}
 
-	public void setContent(String content) {
-		this.content = content;
+	public void setContent(String content) throws CommentException {
+		if (content != null) {
+			this.content = content;
+		} else {
+			throw new CommentException(MSG_INVALID_CONTENT);
+		}
 	}
 
 	public Post getPost() {
 		return post;
 	}
 
-	public void setPost(Post post) {
-		this.post = post;
+	public void setPost(Post post) throws CommentException {
+		if (post != null) {
+			this.post = post;	
+		}else {
+			throw new CommentException(MSG_INVALID_POST);
+		}	
 	}
 
 	public User getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setUser(User user) throws CommentException {
+		if (user != null) {
+			this.user = user;	
+		}else {
+			throw new CommentException(MSG_INVALID_USER);
+		}
 	}
 
 	public LocalDateTime getDateTime() {
 		return dateTime;
 	}
 
-	public void setDateTime(LocalDateTime dateTime) {
-		this.dateTime = dateTime;
+	public void setDateTime(LocalDateTime dateTime) throws CommentException {
+		if (dateTime != null) {
+			this.dateTime = dateTime;	
+		}else {
+			throw new CommentException(MSG_INVALID_DATE_TIME);
+		}
+		
+	}
+
+	public void setNewContent(String content) throws CommentException {
+		if (content != null) {
+			this.content = content;	
+		}else {
+			throw new CommentException(MSG_INVALID_CONTENT);
+		}
 	}
 
 	public int getPostId() {
 		return this.post.getId();
 	}
 
-
-	public void setNewContent(String content) {
-			this.content = content;
+	public int getId() {
+		return id;
+		
 	}
-	
+
+	public void setId(int id) throws CommentException {
+		if (id > 0) {
+			this.id = id;	
+		}else {
+			throw new CommentException(MSG_INVALID_ID);
+		}
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -107,8 +139,9 @@ public class Comment {
 		StringBuilder sb = new StringBuilder();
 		sb.append("  -Comment content: ").append(this.content).append(System.lineSeparator());
 		sb.append("   Author: ").append(this.user.getUsername()).append(System.lineSeparator());
-		sb.append("   Written on: ").append(this.dateTime).append(System.lineSeparator()).append("===============================").append(System.lineSeparator());
-	
+		sb.append("   Written on: ").append(this.dateTime).append(System.lineSeparator())
+				.append("===============================").append(System.lineSeparator());
+
 		return sb.toString();
 	}
 
