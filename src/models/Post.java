@@ -50,7 +50,7 @@ public class Post {
 		this(description,url,section);
 		this.dateTime = dateTime;
 		this.id = id;
-	}//
+	}
 	
 	public Post(String description, String url, Section section) throws PostException {
 		this();
