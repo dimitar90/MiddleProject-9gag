@@ -13,7 +13,7 @@ public class EditCommentCommand extends Command {
 
 	private static final int ARGUMENTS_LENGTH = 2;
 	private static final String FAILED_POST_MESSAGE = "If you want to edit the post, please login first";
-	// edit comment post | post id //id of comment// new content;
+	// edit comment post | id of comment// new content;
 	public EditCommentCommand(List<String> data) {
 		super(data);
 	}

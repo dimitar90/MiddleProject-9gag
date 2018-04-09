@@ -12,7 +12,7 @@ public class DeleteCommentCommand extends Command {
 	private static final int ARGUMENTH_LENGTH = 1;
 	private static final String FAILED_LOGIN_MESSAGE = "Login first!";
 	private static final String SUCCESSFULLY_MESSAGE = "Comment delete successfully.";
-
+	
 	// example
 	// delete comment | commentId
 	public DeleteCommentCommand(List<String> data) {

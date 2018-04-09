@@ -17,6 +17,7 @@ import models.User;
 import utils.Session;
 
 public class CommentRepository {
+	private static final String DELETE_COMMENT_QUERY = "DELETE FROM comments WHERE id = ?";
 	public static final Map<Integer, Comment> COMMENTS = new HashMap<>();
 	private static final String NOT_HAVE_AUTHORIZATION_EDIT_MESSAGE = "Not have authorization for edit this comment!";
 	private static final String MSG_NOT_SUCH_POST = "This post does not exist!";
@@ -126,11 +127,24 @@ public class CommentRepository {
 		isValidComment(commentId);
 
 		isAuthorizated(commentId);
-
+		User user = Session.getInstance().getUser();
+		Comment comment = COMMENTS.get(commentId);
+		Post post = comment.getPost();
+		
+		post.removeComment(comment);
+		user.removeComment(comment);
 		COMMENTS.remove(commentId);
+		
+		try(PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(DELETE_COMMENT_QUERY)){
+			ps.setInt(1, commentId);
+			ps.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
-	
+
 	private void isValidComment(int arg) throws CommentException {
 		if (!COMMENTS.containsKey(arg)) {
 			throw new CommentException(NOT_EXIST_COMMENT_MESSAGE);

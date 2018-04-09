@@ -206,6 +206,9 @@ public class Post {
 		}
 	}
 	
+	public void deleteCommentById(int commentId) {
+		
+	}
 	
 	public void setId(int id) {
 		this.id = id;
@@ -241,5 +244,10 @@ public class Post {
 		this.comments.forEach(c -> sb.append(c));
 		
 		return sb.toString();
+	}
+
+	public Post getPostById(int commentId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

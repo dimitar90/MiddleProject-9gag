@@ -22,7 +22,7 @@ import models.User;
 import utils.Session;
 
 public class PostRepository {
-	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted from %d";
+	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted from %s";
 	private static final String DELETE_POST_QUERY = "DELETE FROM posts WHERE id = ?";
 	private static final String MSG_SUCCESSFULY_GRADED = "Successfuly graded post";
 	private static final String INSERT_POST_RATING_USER_QUERY = "INSERT INTO rating_post_user (post_id, user_id, grade) VALUES(?, ?, ?)";
@@ -162,7 +162,7 @@ public class PostRepository {
 		return String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername());
 	}
 
-	public void addGradeToPost(int postId, int grade) throws PostException {
+	public String addGradeToPost(int postId, int grade) throws PostException {
 		if (grade != DOWN_GRADE && grade != UP_GRADE) {
 			throw new PostException(INVALID_GRADE);
 		}
@@ -191,7 +191,7 @@ public class PostRepository {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		System.out.println(MSG_SUCCESSFULY_GRADED);
+		return MSG_SUCCESSFULY_GRADED;
 	}
 
 	public void listPostsByTagName(String tagName) {
@@ -261,5 +261,7 @@ public class PostRepository {
 		.sorted(comparator)
 		.forEach(p -> System.out.println(p));
 	}
+
+
 
 }
