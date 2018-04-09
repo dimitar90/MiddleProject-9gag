@@ -39,10 +39,8 @@ public class PostRepository {
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
 	private static final String VIEW_POST_DATA = "Successfully create post: id:%d, description: %s, internetUrl: %s in section: %s, wrriten by %s";
 	public static PostRepository postRepository;
-	private SectionRepository refToSectionRepo;
 
 	private PostRepository() {
-		this.refToSectionRepo = SectionRepository.getInstance();
 	}
 
 	public static PostRepository getInstance() {
@@ -52,7 +50,7 @@ public class PostRepository {
 		return postRepository;
 	}
 
-	public String delete(int postId) throws PostException {
+	public String deletePost(int postId) throws PostException {
 		if (!POSTS.containsKey(postId)) {
 			throw new PostException(NOT_EXIST_POST_MEESAGE);
 		}
@@ -87,17 +85,17 @@ public class PostRepository {
 				user.removeRatedPost(post);
 			}
 		}
-		
-		String userName = post.getUser().getUsername(); 
+
+		String userName = post.getUser().getUsername();
 		POSTS.remove(postId);
-		return String.format(MSG_SUCCESSFULY_DELETED_POST, postId,userName);
+		return String.format(MSG_SUCCESSFULY_DELETED_POST, postId, userName);
 	}
 
 	public String addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
 		// Get section by name
-		Section section = this.refToSectionRepo.getSectionByName(sectionName);
+		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
 		User user = Session.getInstance().getUser();
-		List<String> allSectionNames = this.refToSectionRepo.getAllSectionNames();
+		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
 
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
@@ -123,17 +121,17 @@ public class PostRepository {
 			ResultSet result = ps.getGeneratedKeys();
 			result.next();
 			int postId = result.getInt(1);
-			
+
 			post.setId(postId);
 			post.setDescription(description);
 			post.setInternetUrl(url);
 			post.setSection(section);
 			post.setDateTime(dateTime);
-//			post = new Post(postId, description, url, section, dateTime);
+			// post = new Post(postId, description, url, section, dateTime);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		
+
 		TagRepository tagRepo = TagRepository.getInstance();
 		Set<Integer> tagIds = new HashSet<>();
 
@@ -157,9 +155,10 @@ public class PostRepository {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		section.addPost(post);
 		post.setUser(user);
 		POSTS.put(post.getId(), post);
-		
+
 		return String.format(VIEW_POST_DATA, post.getId(), description, url, section.getName(), user.getUsername());
 	}
 
@@ -195,18 +194,45 @@ public class PostRepository {
 		return MSG_SUCCESSFULY_GRADED;
 	}
 
+	public void listAllPostsSortedByDate(boolean inAscending) {
+		Comparator<Post> comparator = null;
+		if (inAscending) {
+			comparator = ((p1, p2) -> p1.getDateTime().compareTo(p2.getDateTime()));
+		} else {
+			comparator = ((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()));
+		}
+		
+		POSTS
+		.values()
+		.stream()
+		.sorted(comparator)
+		.forEach(p -> System.out.println(p));
+	}
+	
 	public void listPostsByTagName(String tagName) {
-		POSTS.values().stream().filter(p -> p.getTags().stream().anyMatch(t -> t.getName().equals(tagName)))
-				.sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime())).forEach(p -> System.out.println(p));
+		POSTS
+		.values()
+		.stream()
+		.filter(p -> p.getTags()
+				.stream()
+				.anyMatch(t -> t.getName().equals(tagName)))
+				.sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()))
+				.forEach(p -> System.out.println(p));
 	}
 
 	public void listAllPostsSortedByLatest() {
-		POSTS.values().stream().sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()))
+		POSTS
+		.values()
+		.stream()
+		.sorted((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()))
 				.forEach(p -> System.err.println(p));
 	}
 
 	public void listAllPostsSortedByRating() {
-		POSTS.values().stream().sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
+		POSTS
+		.values()
+		.stream()
+		.sorted((p1, p2) -> Integer.compare(p2.getRating(), p1.getRating()))
 				.forEach(p -> System.out.println(p));
 	}
 
@@ -223,7 +249,9 @@ public class PostRepository {
 		if (posts.size() == 0) {
 			System.out.println(NO_POST_MESSAGE);
 		} else {
-			posts.stream().filter(p -> p.getSection().getName().equals(sectionName))
+			posts
+			.stream()
+			.filter(p -> p.getSection().getName().equals(sectionName))
 					.forEach(p -> System.out.println(p));
 		}
 
@@ -237,7 +265,7 @@ public class PostRepository {
 		return POSTS.get(postId);
 	}
 
-	public void getProcess() {
+	public void getProcess() throws PostException {
 		for (Post post : POSTS.values()) {
 			if (!post.isDownload() && post.getLocalUrl() != Post.INVALID_URL) {
 				post.downloadImage(post);
@@ -245,18 +273,4 @@ public class PostRepository {
 		}
 	}
 
-	public void listAllPostsSortedByDate(boolean inAscending) {
-		Comparator<Post> comparator = null;
-		if (inAscending) {
-			comparator = ((p1, p2) -> p1.getDateTime().compareTo(p2.getDateTime()));
-		} else {
-			comparator = ((p1, p2) -> p2.getDateTime().compareTo(p1.getDateTime()));
-		}
-		
-		POSTS
-		.values()
-		.stream()
-		.sorted(comparator)
-		.forEach(p -> System.out.println(p));
-	}
 }

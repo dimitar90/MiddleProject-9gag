@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 
 import connection.DatabaseConnection;
+import exceptions.CommentException;
+import exceptions.PostException;
 import exceptions.SectionException;
+import exceptions.UserException;
 import models.Comment;
 import models.Post;
 import models.Section;
@@ -38,7 +41,7 @@ public class DatabaseLoader {
 	private static final String GET_POST_IDS_BY_SECTION_ID = "SELECT id FROM posts WHERE section_id = ?";
 	
 	
-	public static void loadDatabase() throws SQLException, SectionException {
+	public static void loadDatabase() throws SQLException, SectionException, CommentException, PostException, UserException {
 		Connection conn = DatabaseConnection.getConnection();
 		System.out.println(LOADING_DATABASE_MESSAGE);
 		long startLoadingTime = System.currentTimeMillis();
@@ -110,7 +113,6 @@ public class DatabaseLoader {
 				boolean hasDownload = rsPosts.getBoolean("has_download");
 				LocalDateTime dateTime = rsPosts.getTimestamp("date_time").toLocalDateTime();
 				int sectionId = rsPosts.getInt("section_id");
-				// понеже вече съм заредил всички юзъри и секции в репоситоритата направо ще ги взимам от там
 				User author = UserRepository.getInstance().getUserById(rsPosts.getInt("author_id"));
 				Section section = SectionRepository.getInstance().getSectionById(sectionId);
 				
@@ -151,8 +153,6 @@ public class DatabaseLoader {
 		try (PreparedStatement pr = conn.prepareStatement(GET_RATING_FOR_POST_BY_ID)) {
 			ResultSet rs = pr.executeQuery();
 			
-			//тука направо взимам с една заявка общата оценка за всеки пост, понеже става с една заявка с групиране по post_id и агрегиране на 
-			//rating колоната с SUM
 			while (rs.next()) {
 				int postId = rs.getInt("post_id");
 				int rating = rs.getInt("rating");
@@ -171,17 +171,16 @@ public class DatabaseLoader {
 				int commentId = rsComments.getInt("id");
 				String content = rsComments.getString("content");
 				LocalDateTime dateTime = rsComments.getTimestamp("date_time").toLocalDateTime();
-				// тука понеже вече имам заредени постове и юзъри мога да им си ги сетна на
-				// коментара
 				Post post = PostRepository.getInstance().getPostById(rsComments.getInt("post_id"));
 				User author = UserRepository.getInstance().getUserById(rsComments.getInt("author_id"));
 
-				Comment comment = new Comment();
-				comment.setId(commentId);
-				comment.setContent(content);
-				comment.setDateTime(dateTime);
-				comment.setPost(post);
-				comment.setUser(author);
+				Comment comment = new Comment(commentId, content, author, post, dateTime);
+				
+//				comment.setId(commentId);
+//				comment.setContent(content);
+//				comment.setDateTime(dateTime);
+//				comment.setPost(post);
+//				comment.setUser(author);
 
 				CommentRepository.COMMENTS.put(commentId, comment);
 			}

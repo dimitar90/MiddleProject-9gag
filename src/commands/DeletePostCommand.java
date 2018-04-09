@@ -30,7 +30,7 @@ public class DeletePostCommand extends Command{
 				
 		int postId = Integer.parseInt(this.getData().get(0));
 		
-		String result = PostRepository.getInstance().delete(postId);
+		String result = PostRepository.getInstance().deletePost(postId);
 		
 		return result;
 	}

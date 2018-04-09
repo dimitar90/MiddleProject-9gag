@@ -1,5 +1,6 @@
 package utils;
 
+import exceptions.PostException;
 import repositories.PostRepository;
 
 public class Downloader extends Thread {
@@ -16,11 +17,15 @@ public class Downloader extends Thread {
 				System.out.println("Program has stopped");
 				return;
 			}
-			update();
+			try {
+				update();
+			} catch (PostException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
-	private  void update() {
+	private  void update() throws PostException {
 		PostRepository.getInstance().getProcess();
 	}
 

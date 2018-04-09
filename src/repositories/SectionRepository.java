@@ -8,41 +8,24 @@ import java.util.stream.Collectors;
 import exceptions.SectionException;
 import models.Section;
 
-
 public class SectionRepository {
-	public static final Map<Integer,Section> SECTION = new HashMap<>();
-	
+	public static final Map<Integer, Section> SECTION = new HashMap<>();
+
 	private static final String INVALID_SECTION = "Section not found";
-	
+
 	private static SectionRepository sectionRepository;
-	
+
 	private SectionRepository() {
 	}
-	
+
 	public static SectionRepository getInstance() {
 		if (sectionRepository == null) {
 			sectionRepository = new SectionRepository();
 		}
-		
+
 		return sectionRepository;
 	}
-	
-	public Section getSectionByName(String name) {
-		if (!SECTION.values().stream().anyMatch(s -> s.getName().equals(name))) {
-			return null;
-		}
-		
-		return SECTION.values().stream().filter(s -> s.getName().equals(name)).findFirst().get();
-	}
-	
-	public Section getSectionById(int id) throws SectionException {
-		if (!SECTION.containsKey(id)) {
-			throw new SectionException(INVALID_SECTION);
-		}
-		
-		return SECTION.get(id);
-	}
-	
+
 	public List<String> getAllSectionNames() {
 		return SECTION
 				.values()
@@ -50,4 +33,26 @@ public class SectionRepository {
 				.map(s -> s.getName())
 				.collect(Collectors.toList());
 	}
+
+	public Section getSectionByName(String name) {
+		if (!SECTION.values().stream().anyMatch(s -> s.getName().equals(name))) {
+			return null;
+		}
+
+		return SECTION
+				.values()
+				.stream()
+				.filter(s -> s.getName().equals(name))
+				.findFirst()
+				.get();
+	}
+
+	public Section getSectionById(int id) throws SectionException {
+		if (!SECTION.containsKey(id)) {
+			throw new SectionException(INVALID_SECTION);
+		}
+
+		return SECTION.get(id);
+	}
+
 }

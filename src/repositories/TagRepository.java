@@ -53,11 +53,19 @@ public class TagRepository {
 	}
 	
 	public Tag getTagByName(String name) {
-		if (!tags.values().stream().anyMatch(t -> t.getName().equals(name))) {
+		if (!tags
+				.values()
+				.stream()
+				.anyMatch(t -> t.getName().equals(name))) {
 			return null;
 		}
 		
-		return tags.values().stream().filter(t -> t.getName().equals(name)).findFirst().get();
+		return tags
+				.values()
+				.stream()
+				.filter(t -> t.getName().equals(name))
+				.findFirst()
+				.get();
 	}
 	
 	public Tag getTagById(int id) throws TagException {
