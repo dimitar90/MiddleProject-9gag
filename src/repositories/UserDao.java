@@ -13,7 +13,7 @@ import models.User;
 import utils.Crypt;
 import utils.Session;
 
-public class UserRepository {
+public class UserDao {
 	public static final Map<Integer, User> users = new HashMap<Integer, User>();
 
 	private static final String ALREADY_EXIST = "Username already exist!";
@@ -26,14 +26,14 @@ public class UserRepository {
 	private static final String CHECK_EXIST_USER_QUERY = "SELECT * FROM users WHERE username = ?";
 	private static final String LOGIN_QUERY = "SELECT * FROM users WHERE username = ?";
 
-	private static UserRepository userRepository;
+	private static UserDao userRepository;
 
-	private UserRepository() {
+	private UserDao() {
 	}
 
-	public static UserRepository getInstance() {
+	public static UserDao getInstance() {
 		if (userRepository == null) {
-			userRepository = new UserRepository();
+			userRepository = new UserDao();
 		}
 
 		return userRepository;

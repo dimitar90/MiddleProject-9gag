@@ -21,7 +21,7 @@ import models.Tag;
 import models.User;
 import utils.Session;
 
-public class PostRepository {
+public class PostDao {
 	private static final String MSG_SUCCESSFULY_DELETED_POST = "Post with id %d has been deleted from %s";
 	private static final String DELETE_POST_QUERY = "DELETE FROM posts WHERE id = ?";
 	private static final String MSG_SUCCESSFULY_GRADED = "Successfuly graded post";
@@ -38,14 +38,14 @@ public class PostRepository {
 	private static final String INVALID_SECTION_NAME = "The section must be one of these: ";
 	private static final String NO_POST_MESSAGE = "There are no posts in this section";
 	private static final String VIEW_POST_DATA = "Successfully create post: id:%d, description: %s, internetUrl: %s in section: %s, wrriten by %s";
-	public static PostRepository postRepository;
+	public static PostDao postRepository;
 
-	private PostRepository() {
+	private PostDao() {
 	}
 
-	public static PostRepository getInstance() {
+	public static PostDao getInstance() {
 		if (postRepository == null) {
-			postRepository = new PostRepository();
+			postRepository = new PostDao();
 		}
 		return postRepository;
 	}
@@ -73,14 +73,14 @@ public class PostRepository {
 		}
 
 		// delete comments from comment repository and of users
-		CommentRepository commentRepo = CommentRepository.getInstance();
+		CommentDao commentRepo = CommentDao.getInstance();
 		for (Comment c : allCommentsOfPost) {
 			commentRepo.removeCommentById(c.getId());
 		}
 
 		// delete post from each user who voted for him
 		Post post = POSTS.get(postId);
-		for (User user : UserRepository.users.values()) {
+		for (User user : UserDao.users.values()) {
 			if (user.checkForRatedPostByPostId(postId)) {
 				user.removeRatedPost(post);
 			}
@@ -93,9 +93,9 @@ public class PostRepository {
 
 	public String addPost(String description, String url, String sectionName, List<String> tags) throws Exception {
 		// Get section by name
-		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
+		Section section = SectionDao.getInstance().getSectionByName(sectionName);
 		User user = Session.getInstance().getUser();
-		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
+		List<String> allSectionNames = SectionDao.getInstance().getAllSectionNames();
 
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
@@ -132,7 +132,7 @@ public class PostRepository {
 			e.printStackTrace();
 		}
 
-		TagRepository tagRepo = TagRepository.getInstance();
+		TagDao tagRepo = TagDao.getInstance();
 		Set<Integer> tagIds = new HashSet<>();
 
 		for (String tagName : tags) {
@@ -176,7 +176,7 @@ public class PostRepository {
 			throw new PostException(ALREADY_RATED_POST_MESSAGE);
 		}
 
-		Post post = PostRepository.getInstance().getPostById(postId);
+		Post post = PostDao.getInstance().getPostById(postId);
 		post.addRating(grade);
 		user.addRatedPost(post);
 
@@ -237,9 +237,9 @@ public class PostRepository {
 	}
 
 	public void listAllPostsBySectionName(String sectionName) throws PostException {
-		Section section = SectionRepository.getInstance().getSectionByName(sectionName);
+		Section section = SectionDao.getInstance().getSectionByName(sectionName);
 
-		List<String> allSectionNames = SectionRepository.getInstance().getAllSectionNames();
+		List<String> allSectionNames = SectionDao.getInstance().getAllSectionNames();
 		if (section == null) {
 			throw new PostException(INVALID_SECTION_NAME + String.join(", ", allSectionNames));
 		}

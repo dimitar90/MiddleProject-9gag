@@ -16,7 +16,7 @@ import models.Post;
 import models.User;
 import utils.Session;
 
-public class CommentRepository {
+public class CommentDao {
 	private static final String DELETE_COMMENT_QUERY = "DELETE FROM comments WHERE id = ?";
 	public static final Map<Integer, Comment> COMMENTS = new HashMap<>();
 	private static final String NOT_HAVE_AUTHORIZATION_EDIT_MESSAGE = "Not have authorization for edit this comment!";
@@ -27,22 +27,22 @@ public class CommentRepository {
 	private static final String SUCCESSFULLY_EDITED_COMMENT_MESSAGE = "Successfully edited comment with id %d. Old content: %s, new content: %s";
 	private static final String INSERT_COMMENT_QUERY = "INSERT INTO comments (content, date_time, author_id, post_id) VALUES (?,?,?,?)";
 	private static final String VIEW_COMMENT_DATA = "Successfully add comment with id: %d, content: %s, wrriten on post with id: %d, wrriten by %s";
-	private static CommentRepository commentRepository;
+	private static CommentDao commentRepository;
 
-	private CommentRepository() {
+	private CommentDao() {
 
 	}
 
-	public static CommentRepository getInstance() {
+	public static CommentDao getInstance() {
 		if (commentRepository == null) {
-			commentRepository = new CommentRepository();
+			commentRepository = new CommentDao();
 		}
 
 		return commentRepository;
 	}
 
 	public String addComent(String content, int postId) throws CommentException {
-		Post post = PostRepository.getInstance().getPostById(postId);
+		Post post = PostDao.getInstance().getPostById(postId);
 		// If there is such a post
 		if (post == null) {
 			throw new CommentException(MSG_NOT_SUCH_POST);

@@ -8,19 +8,19 @@ import java.util.stream.Collectors;
 import exceptions.SectionException;
 import models.Section;
 
-public class SectionRepository {
+public class SectionDao {
 	public static final Map<Integer, Section> SECTION = new HashMap<>();
 
 	private static final String INVALID_SECTION = "Section not found";
 
-	private static SectionRepository sectionRepository;
+	private static SectionDao sectionRepository;
 
-	private SectionRepository() {
+	private SectionDao() {
 	}
 
-	public static SectionRepository getInstance() {
+	public static SectionDao getInstance() {
 		if (sectionRepository == null) {
-			sectionRepository = new SectionRepository();
+			sectionRepository = new SectionDao();
 		}
 
 		return sectionRepository;

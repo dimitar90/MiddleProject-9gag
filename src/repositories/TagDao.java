@@ -9,7 +9,7 @@ import connection.DatabaseConnection;
 import exceptions.TagException;
 import models.Tag;
 
-public class TagRepository {
+public class TagDao {
 	public static final Map<Integer, Tag> tags = new HashMap<>();
 	
 	private static final String INSERT_TAG_QUERY = "INSERT INTO tags (name) VALUES (?)";
@@ -17,14 +17,14 @@ public class TagRepository {
 	private static final String INVALID_TAG_MESSAGE = "Invalid tag!";
 	private static final String INVALID_INSERT = "Invalid insert tag!";
 	private static final String VIEW_DATA_TAG = "Create tag : id: %d, tag name: %s";
-	private static TagRepository tagRepository;
+	private static TagDao tagRepository;
 	
-	private TagRepository() {
+	private TagDao() {
 	}
 	
-	public static TagRepository getInstance() {
+	public static TagDao getInstance() {
 		if (tagRepository == null) {
-			tagRepository = new TagRepository();
+			tagRepository = new TagDao();
 		}
 		
 		return tagRepository;
