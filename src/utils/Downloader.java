@@ -1,7 +1,7 @@
 package utils;
 
 import exceptions.PostException;
-import repositories.PostRepository;
+import repositories.PostDao;
 
 public class Downloader extends Thread {
 
@@ -26,7 +26,7 @@ public class Downloader extends Thread {
 	}
 
 	private  void update() throws PostException {
-		PostRepository.getInstance().getProcess();
+		PostDao.getInstance().getProcess();
 	}
 
 }

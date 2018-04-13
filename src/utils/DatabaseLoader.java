@@ -17,11 +17,11 @@ import models.Post;
 import models.Section;
 import models.Tag;
 import models.User;
-import repositories.CommentRepository;
-import repositories.PostRepository;
-import repositories.SectionRepository;
-import repositories.TagRepository;
-import repositories.UserRepository;
+import repositories.CommentDao;
+import repositories.PostDao;
+import repositories.SectionDao;
+import repositories.TagDao;
+import repositories.UserDao;
 
 public class DatabaseLoader {
 	private static final String LOADING_DATABASE_MESSAGE = "Loading database...";
@@ -60,7 +60,7 @@ public class DatabaseLoader {
 				user.setUsername(username);
 				user.setEmail(email);
 
-				UserRepository.users.put(userId, user);
+				UserDao.users.put(userId, user);
 				System.out.println("Load user: " + username + " id: " + userId + " email: " + email);
 			}
 		}
@@ -78,7 +78,7 @@ public class DatabaseLoader {
 				section.setId(id);
 				section.setName(name);
 
-				SectionRepository.SECTION.put(section.getId(), section);
+				SectionDao.SECTION.put(section.getId(), section);
 				System.out.println("Load section: " + section.getName() + " id: " + section.getId());
 			}
 		}
@@ -95,7 +95,7 @@ public class DatabaseLoader {
 				tag.setId(tagId);
 				tag.setName(tagName);
 
-				TagRepository.tags.put(tagId, tag);
+				TagDao.tags.put(tagId, tag);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -113,8 +113,8 @@ public class DatabaseLoader {
 				boolean hasDownload = rsPosts.getBoolean("has_download");
 				LocalDateTime dateTime = rsPosts.getTimestamp("date_time").toLocalDateTime();
 				int sectionId = rsPosts.getInt("section_id");
-				User author = UserRepository.getInstance().getUserById(rsPosts.getInt("author_id"));
-				Section section = SectionRepository.getInstance().getSectionById(sectionId);
+				User author = UserDao.getInstance().getUserById(rsPosts.getInt("author_id"));
+				Section section = SectionDao.getInstance().getSectionById(sectionId);
 				
 				Post post = new Post();
 				post.setId(postId);
@@ -125,12 +125,12 @@ public class DatabaseLoader {
 				post.setDateTime(dateTime);
 				post.setUser(author);
 				post.setSection(section);
-				PostRepository.POSTS.put(postId, post);
+				PostDao.POSTS.put(postId, post);
 			}
 		}
 		
 		// load all tags of each post
-				for (Post post : PostRepository.POSTS.values()) {
+				for (Post post : PostDao.POSTS.values()) {
 					try (PreparedStatement pr = conn.prepareStatement(GET_ALL_TAGS_BY_POST_ID_QUERY)) {
 						pr.setInt(1, post.getId());
 						ResultSet rs = pr.executeQuery();
@@ -140,7 +140,7 @@ public class DatabaseLoader {
 							tagIds.add(rs.getInt("tag_id"));
 						}
 						
-						TagRepository tagRepository = TagRepository.getInstance();
+						TagDao tagRepository = TagDao.getInstance();
 						for (Integer tagId : tagIds) {
 							post.addTag(tagRepository.getTagById(tagId));
 						}
@@ -157,7 +157,7 @@ public class DatabaseLoader {
 				int postId = rs.getInt("post_id");
 				int rating = rs.getInt("rating");
 				
-				PostRepository.POSTS.get(postId).addRating(rating);
+				PostDao.POSTS.get(postId).addRating(rating);
 			}
 		} catch (Exception e) {
 			e.getMessage();
@@ -171,8 +171,8 @@ public class DatabaseLoader {
 				int commentId = rsComments.getInt("id");
 				String content = rsComments.getString("content");
 				LocalDateTime dateTime = rsComments.getTimestamp("date_time").toLocalDateTime();
-				Post post = PostRepository.getInstance().getPostById(rsComments.getInt("post_id"));
-				User author = UserRepository.getInstance().getUserById(rsComments.getInt("author_id"));
+				Post post = PostDao.getInstance().getPostById(rsComments.getInt("post_id"));
+				User author = UserDao.getInstance().getUserById(rsComments.getInt("author_id"));
 
 				Comment comment = new Comment(commentId, content, author, post, dateTime);
 				
@@ -182,12 +182,12 @@ public class DatabaseLoader {
 //				comment.setPost(post);
 //				comment.setUser(author);
 
-				CommentRepository.COMMENTS.put(commentId, comment);
+				CommentDao.COMMENTS.put(commentId, comment);
 			}
 		}
 
 		// load all comments of each post
-		for (Post post : PostRepository.POSTS.values()) {
+		for (Post post : PostDao.POSTS.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_ALL_COMENT_IDS_BY_POST_ID_QUERY)) {
 				pr.setInt(1, post.getId());
 				ResultSet rs = pr.executeQuery();
@@ -197,7 +197,7 @@ public class DatabaseLoader {
 					commentIds.add(rs.getInt("id"));
 				}
 				
-				CommentRepository commentRepository = CommentRepository.getInstance();
+				CommentDao commentRepository = CommentDao.getInstance();
 				for (Integer commentId : commentIds) {
 					post.addComment(commentRepository.getCommentById(commentId));
 				}
@@ -210,7 +210,7 @@ public class DatabaseLoader {
 		
 
 		// load all comments for each user
-		for (User user : UserRepository.users.values()) {
+		for (User user : UserDao.users.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_ALL_COMMENT_IDS_BY_USER_ID)) {
 				pr.setInt(1, user.getId());
 				ResultSet rs = pr.executeQuery();
@@ -220,7 +220,7 @@ public class DatabaseLoader {
 					commentIds.add(rs.getInt("id"));
 				}
 				
-				CommentRepository commentRepository = CommentRepository.getInstance();
+				CommentDao commentRepository = CommentDao.getInstance();
 				for (Integer commentId : commentIds) {
 					user.addComment(commentRepository.getCommentById(commentId));
 				}
@@ -230,7 +230,7 @@ public class DatabaseLoader {
 		}
 
 		// load all posts for each user
-		for (User user : UserRepository.users.values()) {
+		for (User user : UserDao.users.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_ALL_POST_IDS_BY_USER_ID)) {
 				pr.setInt(1, user.getId());
 				ResultSet rs = pr.executeQuery();
@@ -240,7 +240,7 @@ public class DatabaseLoader {
 					postIds.add(rs.getInt("id"));
 				}
 
-				PostRepository postRepository = PostRepository.getInstance();
+				PostDao postRepository = PostDao.getInstance();
 				for (Integer postId : postIds) {
 					user.addPost(postRepository.getPostById(postId));
 				}
@@ -250,7 +250,7 @@ public class DatabaseLoader {
 		}
 
 		//load rated posts for each user
-		for (User user : UserRepository.users.values()) {
+		for (User user : UserDao.users.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_RATED_POST_IDS_BY_USER_ID)) {
 				pr.setInt(1, user.getId());
 				
@@ -260,7 +260,7 @@ public class DatabaseLoader {
 					postIds.add(rs.getInt("post_id"));
 				}
 				
-				PostRepository postRepository = PostRepository.getInstance();
+				PostDao postRepository = PostDao.getInstance();
 				for (Integer postId : postIds) {
 					user.addRatedPost(postRepository.getPostById(postId));
 				}
@@ -270,7 +270,7 @@ public class DatabaseLoader {
 		}
 		
 		//load all posts for each sections
-		for (Section section : SectionRepository.SECTION.values()) {
+		for (Section section : SectionDao.SECTION.values()) {
 			try (PreparedStatement pr = conn.prepareStatement(GET_POST_IDS_BY_SECTION_ID)) {
 				pr.setInt(1, section.getId());
 				
@@ -280,7 +280,7 @@ public class DatabaseLoader {
 					postIds.add(rs.getInt("id"));
 				}
 				
-				PostRepository postRepository = PostRepository.getInstance();
+				PostDao postRepository = PostDao.getInstance();
 				for (Integer postId : postIds) {
 					section.addPost(postRepository.getPostById(postId));
 				}

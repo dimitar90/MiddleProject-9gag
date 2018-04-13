@@ -8,7 +8,7 @@ import javax.sql.rowset.serial.SerialException;
 import exceptions.CommentException;
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 
 public class ShowLatestPostsCommand extends Command{
@@ -28,7 +28,7 @@ public class ShowLatestPostsCommand extends Command{
 			throw new PostException(Command.INVALID_DATA);
 		}
 		
-		PostRepository.getInstance().listAllPostsSortedByDate(false);
+		PostDao.getInstance().listAllPostsSortedByDate(false);
 		
 		return SUCCESFULLY_MESSAGE;
 	}

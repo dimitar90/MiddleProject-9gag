@@ -4,7 +4,7 @@ import java.util.List;
 
 import exceptions.CommentException;
 import exceptions.UserException;
-import repositories.CommentRepository;
+import repositories.CommentDao;
 import utils.Checker;
 import utils.Session;
 
@@ -30,7 +30,7 @@ public class DeleteCommentCommand extends Command {
 		}
 		
 		int commentId = Integer.parseInt(this.getData().get(0));
-		CommentRepository.getInstance().delete(commentId);
+		CommentDao.getInstance().delete(commentId);
 		
 		return SUCCESSFULLY_MESSAGE;
 	}

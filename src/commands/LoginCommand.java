@@ -5,7 +5,7 @@ import java.util.List;
 
 import exceptions.UserException;
 import models.User;
-import repositories.UserRepository;
+import repositories.UserDao;
 import utils.Checker;
 import utils.Session;
 
@@ -40,7 +40,7 @@ public class LoginCommand extends Command {
 			throw new UserException(Command.INVALID_PASSWORD);
 		}
 		
-		User user = UserRepository.getInstance().login(username, password);
+		User user = UserDao.getInstance().login(username, password);
 		
 		return (user != null) ? SUCCES_LOGIN_MESSAGE : INVALID_USER_ARGUMENTS;
 	}

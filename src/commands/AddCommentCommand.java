@@ -5,7 +5,7 @@ import java.util.List;
 import exceptions.CommentException;
 import exceptions.UserException;
 import models.Comment;
-import repositories.CommentRepository;
+import repositories.CommentDao;
 import utils.Checker;
 import utils.Session;
 
@@ -34,7 +34,7 @@ public class AddCommentCommand extends Command {
 		String content = this.getData().get(0);
 		int postId = Integer.parseInt(this.getData().get(1));
 
-		String result = CommentRepository.getInstance().addComent(content, postId);
+		String result = CommentDao.getInstance().addComent(content, postId);
 
 		return result;
 	}

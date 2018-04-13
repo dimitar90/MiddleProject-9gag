@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import exceptions.PostException;
 import models.Post;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Session;
 
 public class CreatePostCommand extends Command{
@@ -30,7 +30,7 @@ public class CreatePostCommand extends Command{
 		String section = this.getData().get(2);
 		List<String> tagNames = this.getData().stream().skip(3).collect(Collectors.toList());
 		
-		String result = PostRepository.getInstance().addPost(description, url, section ,tagNames);
+		String result = PostDao.getInstance().addPost(description, url, section ,tagNames);
 		
 //		if (!post.anyComments()) {
 //			System.out.println(MSG_TO_FOR_FIRST_COMMENT);

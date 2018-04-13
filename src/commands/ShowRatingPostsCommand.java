@@ -8,7 +8,7 @@ import javax.sql.rowset.serial.SerialException;
 import exceptions.CommentException;
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 
 public class ShowRatingPostsCommand extends Command {
@@ -29,7 +29,7 @@ public class ShowRatingPostsCommand extends Command {
 			throw new PostException(Command.INVALID_DATA);
 		}
 		
-		PostRepository.getInstance().listAllPostsSortedByRating();
+		PostDao.getInstance().listAllPostsSortedByRating();
 
 		return SUCCESFULLY_MESSAGE;
 	}

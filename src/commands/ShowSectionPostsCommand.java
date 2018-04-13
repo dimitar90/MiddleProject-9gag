@@ -3,7 +3,7 @@ package commands;
 import java.util.List;
 
 import exceptions.PostException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 
 public class ShowSectionPostsCommand extends Command {
@@ -24,7 +24,7 @@ public class ShowSectionPostsCommand extends Command {
 
 		String sectionName = this.getData().get(0);
 		
-		PostRepository.getInstance().listAllPostsBySectionName(sectionName);
+		PostDao.getInstance().listAllPostsBySectionName(sectionName);
 
 		return SUCCESFULLY_MESSAGE;
 	}

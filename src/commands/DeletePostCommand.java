@@ -5,7 +5,7 @@ import java.util.List;
 
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 import utils.Session;
 
@@ -30,7 +30,7 @@ public class DeletePostCommand extends Command{
 				
 		int postId = Integer.parseInt(this.getData().get(0));
 		
-		String result = PostRepository.getInstance().deletePost(postId);
+		String result = PostDao.getInstance().deletePost(postId);
 		
 		return result;
 	}

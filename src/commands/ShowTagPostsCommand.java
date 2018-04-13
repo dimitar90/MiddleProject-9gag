@@ -8,7 +8,7 @@ import javax.sql.rowset.serial.SerialException;
 import exceptions.CommentException;
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 
 public class ShowTagPostsCommand extends Command {
@@ -33,7 +33,7 @@ public class ShowTagPostsCommand extends Command {
 
 		String tagName = this.getData().get(0);
 		
-		PostRepository.getInstance().listPostsByTagName(tagName);
+		PostDao.getInstance().listPostsByTagName(tagName);
 
 		return SUCCESFULLY_MESSAGE;
 	}

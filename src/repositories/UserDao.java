@@ -6,11 +6,13 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mindrot.jbcrypt.BCrypt;
+
 import commands.LoginCommand;
 import connection.DatabaseConnection;
 import exceptions.UserException;
 import models.User;
-import utils.Crypt;
+//import utils.Crypt;
 import utils.Session;
 
 public class UserDao {
@@ -50,12 +52,14 @@ public class UserDao {
 				throw new UserException(LoginCommand.INVALID_USER_ARGUMENTS);
 			} else {
 				int id = resultSet.getInt("id");
-				String heshedPassword = resultSet.getString("password");
+				String heshed = resultSet.getString("password");
 
-				if (!Crypt.checkPassword(password, heshedPassword)) {
+//				if (!Crypt.checkPassword(password, heshed)) {
+//					throw new UserException(LoginCommand.INVALID_USER_ARGUMENTS);
+//				}
+				if (!BCrypt.checkpw(password, heshed)) {
 					throw new UserException(LoginCommand.INVALID_USER_ARGUMENTS);
 				}
-
 				user = users.get(id);
 			}
 		}
@@ -72,9 +76,11 @@ public class UserDao {
 		try (PreparedStatement preparedStatement = DatabaseConnection.getConnection()
 				.prepareStatement(INSERT_USER_QUERY, new String[] { "id" })) {
 
-			password = Crypt.hashPassword(password);
+			
+			String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+//			password = Crypt.hashPassword(password);
 			preparedStatement.setString(1, username);
-			preparedStatement.setString(2, password);
+			preparedStatement.setString(2, hashed);
 			preparedStatement.setString(3, email);
 			preparedStatement.executeUpdate();
 

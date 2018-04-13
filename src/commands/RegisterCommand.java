@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import exceptions.UserException;
-import repositories.UserRepository;
+import repositories.UserDao;
 import utils.Checker;
 import utils.Session;
 
@@ -48,7 +48,7 @@ public class RegisterCommand extends Command {
 			throw new UserException(INVALID_EMAIL);
 		}
 
-		String result = UserRepository.getInstance().addUser(username, password, email);
+		String result = UserDao.getInstance().addUser(username, password, email);
 		return result;
 	}
 

@@ -8,7 +8,7 @@ import javax.sql.rowset.serial.SerialException;
 import exceptions.CommentException;
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.PostRepository;
+import repositories.PostDao;
 import utils.Checker;
 import utils.Session;
 
@@ -35,7 +35,7 @@ public class RatePostCommand extends Command {
 		int postId = Integer.parseInt(this.getData().get(0));
 		int grade = Byte.parseByte(this.getData().get(1));
 		
-		String result = PostRepository.getInstance().addGradeToPost(postId, grade);
+		String result = PostDao.getInstance().addGradeToPost(postId, grade);
 		
 		return result;
 	}

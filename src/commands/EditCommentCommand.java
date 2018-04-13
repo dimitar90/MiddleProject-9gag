@@ -5,7 +5,7 @@ import java.util.List;
 
 import exceptions.PostException;
 import exceptions.UserException;
-import repositories.CommentRepository;
+import repositories.CommentDao;
 import utils.Checker;
 import utils.Session;
 
@@ -32,7 +32,7 @@ public class EditCommentCommand extends Command {
 		int commentId = Integer.parseInt(this.getData().get(0));
 		String content = this.getData().get(1);
 
-		String result = CommentRepository.getInstance().editComment(commentId,content);
+		String result = CommentDao.getInstance().editComment(commentId,content);
 
 		return result;
 	}
